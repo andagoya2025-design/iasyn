@@ -4681,17 +4681,17 @@ const MODO_LAB = true;
    - No exponer en formularios de usuario.
    - Para una instalación nueva, sustituir únicamente la URL entre comillas.
 */
-const AUROSANAX_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlG4dVNL1xW9pRzQ8EZtvXvKuRQV3WRpxisBFuj70bQw8c5qopBLQAe7TfNvn4zyra/exec';
-const API_URL = AUROSANAX_APPS_SCRIPT_URL;
-window.API_URL = AUROSANAX_APPS_SCRIPT_URL;
-window.APP_SCRIPT_URL = AUROSANAX_APPS_SCRIPT_URL;
+const IASYN_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGgDpd_cUcGZa5irfGG8eem3LBvWE1-gGknCYUr-YWDI3XT1C5TPC0JK54QhoVFQwW/exec';
+const API_URL = IASYN_APPS_SCRIPT_URL;
+window.API_URL = IASYN_APPS_SCRIPT_URL;
+window.APP_SCRIPT_URL = IASYN_APPS_SCRIPT_URL;
 
 try{
-  localStorage.setItem('AUROSANAX_API_URL', AUROSANAX_APPS_SCRIPT_URL);
+  localStorage.setItem('IASYN_API_URL', IASYN_APPS_SCRIPT_URL);
 }catch(e){}
 
 function auroApiUrlGlobal(){
-  return String(window.API_URL || window.APP_SCRIPT_URL || AUROSANAX_APPS_SCRIPT_URL || '').trim();
+  return String(window.API_URL || window.APP_SCRIPT_URL || IASYN_APPS_SCRIPT_URL || '').trim();
 }
 window.auroApiUrlGlobal = auroApiUrlGlobal;
 
