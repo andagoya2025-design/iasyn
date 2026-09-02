@@ -1,5 +1,5 @@
 /* ==========================================================
-   AUROSANAX ERP DEMO - CONFIG CENTRO JS
+   IASYN ERP DEMO - CONFIG CENTRO JS
    Versión: 2026-07-06
    Objetivo:
    - Mantener carga y guardado actual de datos del centro.
@@ -242,9 +242,9 @@
 
   function inicializarLogoUploaderCentro(){
     const inputFile = obtenerInputLogoArchivoCentro();
-    if(!inputFile || inputFile.dataset.auroLogoInit === '1') return;
+    if(!inputFile || inputFile.dataset.iasynLogoInit === '1') return;
 
-    inputFile.dataset.auroLogoInit = '1';
+    inputFile.dataset.iasynLogoInit = '1';
     inputFile.addEventListener('change', function(){
       const file = this.files && this.files.length ? this.files[0] : null;
       logoCentroArchivoSeleccionado = file || null;
@@ -271,14 +271,14 @@
 
 
   /* ==========================================================
-     AUROSANAX 2026-08-21 · IDENTIDAD VISUAL DE CONFIGURACIÓN
+     IASYN 2026-08-21 · IDENTIDAD VISUAL DE CONFIGURACIÓN
      QUIRÚRGICO / ANTIRREGRESIVO
      - Sin crear botones ni navegación.
      - Sin tocar seguridad, sesión, permisos ni backend.
      - Solo sincroniza textos visibles con obtenerConfiguracion().
      ========================================================== */
   function aplicarIdentidadVisualConfiguracionCentro(){
-    const nombre = String(valorConfigCentro('nombre_clinica', 'AUROSANAX') || 'AUROSANAX').trim();
+    const nombre = String(valorConfigCentro('nombre_clinica', 'IASYN') || 'IASYN').trim();
     const modo = String(valorConfigCentro('modo_sistema', '') || '').trim();
 
     try{
@@ -331,7 +331,7 @@
       configuracionCentro = await apiGet('obtenerConfiguracion');
       if(!configuracionCentro || typeof configuracionCentro !== 'object' || Array.isArray(configuracionCentro)) configuracionCentro = {};
 
-      document.getElementById('cfgNombreClinica').value = valorConfigCentro('nombre_clinica', 'AUROSANAX DEMO');
+      document.getElementById('cfgNombreClinica').value = valorConfigCentro('nombre_clinica', 'IASYN DEMO');
       document.getElementById('cfgWhatsappClinica').value = valorConfigCentro('whatsapp_clinica', '');
       document.getElementById('cfgEmailClinica').value = valorConfigCentro('email_clinica', '');
       document.getElementById('cfgDireccionClinica').value = valorConfigCentro('direccion_clinica', '');
