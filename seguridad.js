@@ -25,7 +25,7 @@
   'use strict';
 
   // IASYN: identificador técnico de build para verificar caché del navegador.
-  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R2';
+  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R3';
 
   /* ========================================================
      CONFIGURACIÓN TÉCNICA
@@ -34,7 +34,7 @@
      ======================================================== */
 
   const AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO =
-    'https://script.google.com/macros/s/AKfycbzlG4dVNL1xW9pRzQ8EZtvXvKuRQV3WRpxisBFuj70bQw8c5qopBLQAe7TfNvn4zyra/exec';
+    'https://script.google.com/macros/s/AKfycbwGgDpd_cUcGZa5irfGG8eem3LBvWE1-gGknCYUr-YWDI3XT1C5TPC0JK54QhoVFQwW/exec';
 
   const SEGURIDAD_CONFIG = Object.freeze({
     apiUrl: AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO,
