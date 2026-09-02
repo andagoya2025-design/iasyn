@@ -24,6 +24,9 @@
 (function () {
   'use strict';
 
+  // IASYN: identificador técnico de build para verificar caché del navegador.
+  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R2';
+
   /* ========================================================
      CONFIGURACIÓN TÉCNICA
      Para localizar rápidamente el endpoint, buscar:
