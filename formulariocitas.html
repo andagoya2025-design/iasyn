@@ -101,7 +101,7 @@
     .success-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
     .success-note{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:14px;padding:10px 12px;margin-top:12px;font-size:13px;font-weight:800}
 
-    /* AUROSANAX: estado final seguro después de reservar */
+    /* IASYN: estado final seguro después de reservar */
     #citaForm.reserva-completada > .flow-card,
     #citaForm.reserva-completada > .mini-note,
     #citaForm.reserva-completada > #formMainActions{display:none!important}
@@ -145,7 +145,7 @@
       .success-actions .btn-wa,.success-actions .btn-wa-secretaria,.success-actions .btn-line{width:100%;justify-content:center}
     }
 
-    /* ===== AUROSANAX - IDENTIDAD INSTITUCIONAL DINÁMICA ===== */
+    /* ===== IASYN - IDENTIDAD INSTITUCIONAL DINÁMICA ===== */
     .logo{
       overflow:hidden;
     }
@@ -364,8 +364,8 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxaB6gz0bXnLnCKOBwEU8jGhRGqrql2o83OeG5_xc6ijnnEoG9L9_v9sMgK5OphMs7mow/exec';
-    let WHATSAPP_SECRETARIA = '593984567660';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzlG4dVNL1xW9pRzQ8EZtvXvKuRQV3WRpxisBFuj70bQw8c5qopBLQAe7TfNvn4zyra/exec';
+    let WHATSAPP_SECRETARIA = '';
 
     let disponibilidad = [];
     let medicos = [];
@@ -489,13 +489,13 @@
     }
 
     function aplicarConfiguracionCentroFormulario(){
-      const nombre = valorConfigFormulario('nombre_clinica', 'AUROSANAX');
-      const whatsapp = valorConfigFormulario('whatsapp_clinica', '593984567660');
+      const nombre = valorConfigFormulario('nombre_clinica', 'IASYN');
+      const whatsapp = valorConfigFormulario('whatsapp_clinica', '');
       const email = valorConfigFormulario('email_clinica', '');
       const direccion = valorConfigFormulario('direccion_clinica', '');
       const logoUrl = valorConfigFormulario('logo_url', '');
 
-      WHATSAPP_SECRETARIA = normalizarWhatsApp(whatsapp) || '593984567660';
+      WHATSAPP_SECRETARIA = normalizarWhatsApp(whatsapp) || '';
 
       const nombreEl = document.getElementById('nombreCentroHero');
       const tituloEl = document.getElementById('tituloDocumentoCentro');
@@ -1025,7 +1025,7 @@
       return soloDigitos(p?.whatsapp || p?.telefono || p?.celular || '');
     }
 
-    /* ===== AUROSANAX - CONTROL QUIRÚRGICO DE IDENTIDAD =====
+    /* ===== IASYN - CONTROL QUIRÚRGICO DE IDENTIDAD =====
        La cédula/documento identifica al paciente.
        El teléfono NO se usa como identificador único porque puede ser compartido
        por familiares. No modifica guardado, API, estructura de datos ni agenda.
@@ -1383,7 +1383,7 @@
         servicio: document.getElementById('servicio').value,
         tipo_cita: document.getElementById('servicio').value,
         motivo: document.getElementById('servicio').value,
-        canal_agendamiento: 'Formulario Web AUROSANAX',
+        canal_agendamiento: 'Formulario Web IASYN',
         observaciones: document.getElementById('observaciones').value.trim()
       };
 
@@ -1451,10 +1451,10 @@
         const cedulaPaciente = data.numero_documento || '';
         const whatsappPaciente = data.whatsapp || data.telefono || '';
         const codigoReserva = idCita || 'Pendiente de asignar';
-        const nombreCentroMensaje = valorConfigFormulario('nombre_clinica', 'AUROSANAX');
+        const nombreCentroMensaje = valorConfigFormulario('nombre_clinica', 'IASYN');
 
         /*
-          AUROSANAX - AJUSTE QUIRÚRGICO WHATSAPP FORMULARIO
+          IASYN - AJUSTE QUIRÚRGICO WHATSAPP FORMULARIO
           - Usa el nombre institucional desde Configuración.
           - Mantiene el contenido y flujo actual.
           - Usa escapes Unicode para preservar emojis aunque el archivo
