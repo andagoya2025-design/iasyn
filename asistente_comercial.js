@@ -782,7 +782,7 @@
     if (direct) return direct;
 
     try {
-      return asString(global.localStorage?.getItem("AUROSANAX_API_URL")).trim();
+      return asString(global.localStorage?.getItem("IASYN_API_URL")).trim();
     } catch (_) {
       return "";
     }
