@@ -1,5 +1,5 @@
 /***********************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP DEMO
  Archivo: auditoria_clinica.js
  Módulo: Auditoría clínica independiente
  Versión: 4.0.2
@@ -19,7 +19,7 @@
 (function(){
   'use strict';
 
-  const MODULO = 'AUROSANAX AUDITORÍA CLÍNICA';
+  const MODULO = 'IASYN AUDITORÍA CLÍNICA';
   const state = {
     preparado: false,
     cargando: false,
@@ -108,7 +108,7 @@
       #securityAuditoriaClinica .auro-audit-control-head small{display:block;color:#64748b;font-size:12px;font-weight:650;margin-top:3px}
       #securityAuditoriaClinica .auro-audit-control-note{margin-top:12px;padding:9px 11px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:12px;font-weight:700}
 
-      /* AUROSANAX 4.0.1 — mejora visual local, sin tocar CSS global */
+      /* IASYN 4.0.1 — mejora visual local, sin tocar CSS global */
       #securityAuditoriaClinica #audClinRefrescar{
         background:linear-gradient(135deg,#7a163f,#a52167)!important;
         border:1px solid #7a163f!important;
@@ -334,7 +334,7 @@
 
   function render(){
     /*
-      AUROSANAX 4.0.1:
+      IASYN 4.0.1:
       El orden es exclusivamente de presentación. state.eventos conserva los
       datos recibidos y la base/backend no se modifica.
     */
