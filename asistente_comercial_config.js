@@ -64,7 +64,7 @@
       address:
         "Edificio Ágora 21, sector Mall del Sol, Guayaquil, Ecuador.",
       neverMentionCities: ["Quito"],
-      appointmentUrl: "https://aurosanax.com/formulariocita.html",
+      appointmentUrl: "https://iasyn.fyi/formulariocitas.html",
       defaultChannel: "GENERAL"
     },
 
