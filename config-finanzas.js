@@ -1,5 +1,5 @@
 /* ==========================================================
-   AUROSANAX ERP DEMO - CONFIG FINANZAS JS
+   IASYN ERP DEMO - CONFIG FINANZAS JS
    Versión: 2026-08-11 / 06 CIERRE PREMIUM
    Fase 3 - Archivo independiente ampliado
 
@@ -90,11 +90,11 @@
     'Depreciación de equipos': { categoria: 'Equipos/Depreciación', periodicidad: 'Mensual' }
   });
 
-  /* Modelo financiero base entregado para AUROSANAX.
+  /* Modelo financiero base entregado para IASYN.
      La carga es manual por botón, nunca automática al abrir.
      Tasa de Habilitación permanece disponible en catálogo pero no se precarga
      porque el documento base no proporciona un valor. */
-  const AURO_FIN_GASTOS_BASE_AUROSANAX = Object.freeze([
+  const AURO_FIN_GASTOS_BASE_IASYN = Object.freeze([
     { nombre_gasto:'Alquiler', categoria:'Infraestructura', valor:950, periodicidad:'Mensual' },
     { nombre_gasto:'Luz', categoria:'Servicios básicos', valor:40, periodicidad:'Mensual' },
     { nombre_gasto:'Agua', categoria:'Servicios básicos', valor:10, periodicidad:'Mensual' },
@@ -232,7 +232,7 @@
       auroFinanzasConfigCargada = true;
       finSetMsg('finanzasConfigMsg', 'Configuración financiera cargada.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - cargar configuración:', e);
+      console.error('IASYN Finanzas - cargar configuración:', e);
       finSetMsg('finanzasConfigMsg',
         'No se pudo cargar la configuración financiera: ' + finTexto(e.message || e),
         'error');
@@ -347,7 +347,7 @@
 
       finSetMsg('finanzasConfigMsg', 'Configuración financiera guardada correctamente.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - guardar configuración:', e);
+      console.error('IASYN Finanzas - guardar configuración:', e);
       finSetMsg('finanzasConfigMsg',
         'Error guardando configuración financiera: ' + finTexto(e.message || e),
         'error');
@@ -534,7 +534,7 @@
 
 
   /* ==========================================================
-     AUROSANAX FINANZAS - RECUPERACIÓN QUIRÚRGICA RENTABILIDAD
+     IASYN FINANZAS - RECUPERACIÓN QUIRÚRGICA RENTABILIDAD
      2026-08-18 · ANTIRREGRESIÓN
 
      Recupera exclusivamente el resumen mensual existente en la
@@ -626,7 +626,7 @@
 
       return data;
     }catch(e){
-      console.error('AUROSANAX Finanzas - resumen mensual:', e);
+      console.error('IASYN Finanzas - resumen mensual:', e);
       finSetMsg('finResumenMsg',
         'No se pudo calcular el resumen mensual: ' + finTexto(e.message || e),
         'error'
@@ -675,7 +675,7 @@
       renderGastosFijosFinanzas();
       finSetMsg('finanzasGastosMsg', 'Gastos fijos cargados.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - cargar gastos:', e);
+      console.error('IASYN Finanzas - cargar gastos:', e);
       auroFinanzasGastos = [];
       renderGastosFijosFinanzas();
       finSetMsg('finanzasGastosMsg',
@@ -857,7 +857,7 @@
         'ok'
       );
     }catch(e){
-      console.error('AUROSANAX Finanzas - cambiar estado gasto:', e);
+      console.error('IASYN Finanzas - cambiar estado gasto:', e);
       finSetMsg(
         'finanzasGastosMsg',
         'Error actualizando estado del gasto: ' + finTexto(e.message || e),
@@ -897,17 +897,17 @@
       await cargarGastosFijosFinanzas(true);
       finSetMsg('finanzasGastosMsg', 'Gasto eliminado correctamente.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - eliminar gasto:', e);
+      console.error('IASYN Finanzas - eliminar gasto:', e);
       finSetMsg('finanzasGastosMsg', 'No se eliminó el gasto: ' + finTexto(e.message || e), 'error');
       alert('No se pudo eliminar: ' + finTexto(e.message || e));
     }
   }
 
-  async function cargarGastosBaseAurosanaxFinanzas(){
+  async function cargarGastosBaseIasynFinanzas(){
     finValidarApi();
 
     const fechaInicio = finTexto(finEl('finGastoFechaInicio')?.value) || fechaHoyFinanzas();
-    const faltantes = AURO_FIN_GASTOS_BASE_AUROSANAX.filter(function(base){
+    const faltantes = AURO_FIN_GASTOS_BASE_IASYN.filter(function(base){
       const clave = finNormalizarClaveGasto(base.nombre_gasto);
       return !auroFinanzasGastos.some(function(g){
         return finNormalizarClaveGasto(g.nombre_gasto) === clave;
@@ -943,7 +943,7 @@
             fecha_inicio: fechaInicio,
             fecha_fin: '',
             estado: 'Activo',
-            observaciones: 'Carga inicial desde modelo financiero base AUROSANAX'
+            observaciones: 'Carga inicial desde modelo financiero base IASYN'
           });
           if(!r || r.success !== true) throw new Error((r && r.message) || 'Error no especificado');
           creados++;
@@ -961,7 +961,7 @@
           : ('Plantilla base cargada correctamente: ' + creados + ' gastos creados sin duplicados.'),
         errores.length ? 'error' : 'ok'
       );
-      if(errores.length) console.warn('AUROSANAX Finanzas - errores carga base:', errores);
+      if(errores.length) console.warn('IASYN Finanzas - errores carga base:', errores);
     }finally{
       finSetBoton('btnCargarBaseGastosFinanzas', false);
     }
@@ -1072,7 +1072,7 @@
       await cargarGastosFijosFinanzas(true);
       finSetMsg('finanzasGastosMsg', 'Gasto fijo guardado correctamente.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - guardar gasto:', e);
+      console.error('IASYN Finanzas - guardar gasto:', e);
       finSetMsg('finanzasGastosMsg',
         'Error guardando gasto fijo: ' + finTexto(e.message || e),
         'error');
@@ -1119,7 +1119,7 @@
       renderConfiguracionMedicosFinanzas();
       finSetMsg('finanzasMedicosMsg', 'Configuración económica de médicos cargada.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - cargar médicos:', e);
+      console.error('IASYN Finanzas - cargar médicos:', e);
       auroFinanzasCatalogoMedicos = [];
       auroFinanzasConfigMedicos = [];
       renderSelectMedicosFinanzas();
@@ -1326,7 +1326,7 @@
       await cargarMedicosFinanzas(true);
       finSetMsg('finanzasMedicosMsg', 'Configuración económica del médico guardada correctamente.', 'ok');
     }catch(e){
-      console.error('AUROSANAX Finanzas - guardar médico:', e);
+      console.error('IASYN Finanzas - guardar médico:', e);
       finSetMsg(
         'finanzasMedicosMsg',
         'Error guardando configuración económica del médico: ' + finTexto(e.message || e),
@@ -1425,7 +1425,7 @@
     const btnBase = finEl('btnCargarBaseGastosFinanzas');
     if(btnBase && btnBase.dataset.auroFinInit !== '1'){
       btnBase.dataset.auroFinInit = '1';
-      btnBase.addEventListener('click', cargarGastosBaseAurosanaxFinanzas);
+      btnBase.addEventListener('click', cargarGastosBaseIasynFinanzas);
     }
 
     const btnMedico = finEl('btnGuardarMedicoFinanzas');
@@ -1496,7 +1496,7 @@
     limpiarGasto: limpiarFormularioGastoFinanzas,
     cambiarEstadoGasto: cambiarEstadoGastoFinanzas,
     eliminarGasto: eliminarGastoFinanzas,
-    cargarGastosBase: cargarGastosBaseAurosanaxFinanzas,
+    cargarGastosBase: cargarGastosBaseIasynFinanzas,
     cargarResumen: function(){ return cargarResumenMensualFinanzas(true); },
     guardarMedico: guardarConfiguracionMedicoFinanzas,
     limpiarMedico: limpiarFormularioMedicoFinanzas,
