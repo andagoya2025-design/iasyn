@@ -31,7 +31,7 @@
      ======================================================== */
 
   const AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO =
-    'https://script.google.com/macros/s/AKfycbxaB6gz0bXnLnCKOBwEU8jGhRGqrql2o83OeG5_xc6ijnnEoG9L9_v9sMgK5OphMs7mow/exec';
+    'https://script.google.com/macros/s/AKfycbzlG4dVNL1xW9pRzQ8EZtvXvKuRQV3WRpxisBFuj70bQw8c5qopBLQAe7TfNvn4zyra/exec';
 
   const SEGURIDAD_CONFIG = Object.freeze({
     apiUrl: AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO,
