@@ -1,5 +1,5 @@
 /***********************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP
  Archivo: documentos.js
  Módulo: Documentos clínicos por atención
  Versión: 1.3.0
@@ -26,13 +26,27 @@
   'use strict';
 
   if(window.auroDocumentos && window.auroDocumentos.version){
-    console.warn('AUROSANAX DOCUMENTOS: módulo ya cargado.');
+    console.warn('IASYN DOCUMENTOS: módulo ya cargado.');
     return;
   }
 
-  const MODULO = 'AUROSANAX DOCUMENTOS';
+  const MODULO = 'IASYN DOCUMENTOS';
   const VERSION = '1.3.0';
-  const JSON_VERSION = 'AUROSANAX_DOCUMENTOS_JSON_V1';
+  const JSON_VERSION = 'IASYN_DOCUMENTOS_JSON_V1';
+
+  /*
+    IASYN - AISLAMIENTO / COMPATIBILIDAD INTERNA TEMPORAL
+    -----------------------------------------------------
+    Este módulo no contiene URLs directas de Apps Script, Drive, Sheets
+    ni dominios AUROSANAX. El backend se obtiene exclusivamente desde
+    API_URL, que debe estar definido por el index de IASYN.
+
+    Los eventos `aurosanax:*`, claves `aurosanax_*`, objetos `window.auro*`
+    y atributos DOM `data-auro-*` que permanecen son contratos internos
+    heredados compartidos con Atenciones, Historia, Diagnóstico e index.
+    No representan una conexión activa con AUROSANAX PRUEBA y no deben
+    renombrarse de forma aislada porque romperían la comunicación interna.
+  */
 
   /*
     CONTRATOS DE BACKEND ESPERADOS
@@ -448,13 +462,15 @@
 
   function usuarioActual(){
     try{
-      const raw = sessionStorage.getItem('aurosanax_seguridad_usuario');
+      const raw =
+        sessionStorage.getItem('iasyn_seguridad_usuario') ||
+        sessionStorage.getItem('aurosanax_seguridad_usuario');
       if(raw){
         const u = JSON.parse(raw);
         return txt(u.nombre_completo || u.usuario || u.email);
       }
     }catch(e){}
-    return txt(document.documentElement.dataset.auroUsuario) || 'AUROSANAX ERP';
+    return txt(document.documentElement.dataset.auroUsuario) || 'IASYN ERP';
   }
 
   function fechaVisual(valor){
@@ -1552,7 +1568,7 @@
 
     const w = window.open(url,'_blank','noopener,noreferrer');
     if(!w){
-      setMsg('El navegador bloqueó la apertura. Permita ventanas emergentes para AUROSANAX.','warn');
+      setMsg('El navegador bloqueó la apertura. Permita ventanas emergentes para IASYN.','warn');
     }
   }
 
@@ -1802,5 +1818,8 @@
     resolverMedico,
     cargarMedicosActivos
   };
+
+  /* Alias propio IASYN sin romper consumidores heredados de window.auroDocumentos. */
+  window.iasynDocumentos = window.auroDocumentos;
 
 })();
