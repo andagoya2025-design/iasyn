@@ -1,5 +1,5 @@
 /* ============================================================
-   AUROSANAX CLINICAL ERP DEMO
+   IASYN CLINICAL ERP
    MÓDULO: OBSTETRICIA
    Archivo: obstetricia.js
    Versión: 1.0.2 - 2026-07-23 · retiro quirúrgico de campos redundantes
@@ -7,8 +7,8 @@
 ============================================================ */
 (function(){
 'use strict';
-const MODULO='AUROSANAX_OBSTETRICIA_V1';
-const STORAGE_KEY='aurosanax_obstetricia_local_v1';
+const MODULO='IASYN_OBSTETRICIA_V1';
+const STORAGE_KEY='iasyn_obstetricia_local_v1';
 const VERSION='20260830_obstetricia_v1_0_4_noop_cambios_reales_refresco_tarjeta';
 let registroActual=null,cargando=false,guardando=false,ultimoIdAtencion='',contextoSeleccionado=null,cargaAntecedentesSeq=0;
 let cambiosUsuarioObstetricia=false,firmaBaseObstetricia='';
@@ -41,7 +41,7 @@ function obsTieneControlesSintomasPropios(){
   return ['obsSintSangrado','obsSintPerdidaLiquido','obsSintDolorPelvico','obsSintContracciones','obsSintCefalea','obsSintFosfenos','obsSintTinnitus','obsSintEpigastralgia','obsSintDisuria','obsSintOtros','obsSintDescripcion'].some(id=>!!obsControlPropio(id))
 }
 function setText(id,v,x='—'){const e=$(id);if(e)e.textContent=txt(v)||x}
-function usuarioActual(){try{if(typeof window.obtenerUsuarioActual==='function'){const u=window.obtenerUsuarioActual();return txt(u?.nombre||u?.nombre_completo||u?.usuario||u?.email||u)}const u=window.usuarioActualERP||window.usuarioActual||window.currentUser||{};return txt(u.nombre||u.nombre_completo||u.usuario||u.email)||'AUROSANAX ERP'}catch(_){return 'AUROSANAX ERP'}}
+function usuarioActual(){try{if(typeof window.obtenerUsuarioActual==='function'){const u=window.obtenerUsuarioActual();return txt(u?.nombre||u?.nombre_completo||u?.usuario||u?.email||u)}const u=window.usuarioActualERP||window.usuarioActual||window.currentUser||{};return txt(u.nombre||u.nombre_completo||u.usuario||u.email)||'AUROSANAX ERP'}catch(_){return 'IASYN ERP'}}
 function leerAtenciones(){for(const k of ['aurosanax_atenciones_local_v1','aurosanax_atenciones','atenciones']){try{const a=JSON.parse(localStorage.getItem(k)||'[]');if(Array.isArray(a)&&a.length)return a}catch(_){}}return []}
 function normalizarDetalle(d){if(!d||typeof d!=='object')return null;const c=d.atencion||d.data||d.registro||d;const id=txt(c?.id_atencion||c?.id||d.id_atencion||d.id);return id?{...c,id_atencion:id}:null}
 function idAtencionDOM(){for(const s of ['[data-id-atencion].active','[data-id-atencion][aria-selected="true"]','[data-id-atencion].selected','#idAtencionActiva','#atencionActivaId','#hcIdAtencion','[name="id_atencion"]']){const e=document.querySelector(s);if(!e)continue;const id=txt(e.dataset?.idAtencion||e.value||e.getAttribute('data-id-atencion'));if(id)return id}return ''}
@@ -270,6 +270,12 @@ function renderizar(){const sec=$('obstetricia');if(!sec){console.warn(MODULO,'N
 <div class="obs-panel"><div class="obs-panel-title"><i class="bi bi-shield-check"></i>Clasificación y seguimiento</div><div class="row g-3"><div class="col-md-4"><label class="form-label fw-bold">Riesgo obstétrico</label><select id="obsRiesgoObstetrico" class="form-select"><option value="">No clasificado</option><option>Bajo</option><option>Moderado</option><option>Alto</option><option>Muy alto</option></select></div><div class="col-md-4"><label class="form-label fw-bold">Próximo control</label><input id="obsProximoControl" type="date" class="form-control"></div><div class="col-md-12"><label class="form-label fw-bold">Observaciones</label><textarea id="obsObservaciones" rows="3" class="form-control"></textarea></div></div></div></div>`;$('obsBtnGuardar')?.addEventListener('click',guardar);$('obsBtnGuardarInferior')?.addEventListener('click',guardar);const rec=()=>{if(confirm('¿Descartar cambios no guardados y recuperar la última versión guardada?'))cargar(true)};$('obsBtnRecargar')?.addEventListener('click',rec);$('obsBtnRecargarInferior')?.addEventListener('click',rec);$('obsFum')?.addEventListener('change',calcularFum);actualizarEstado();return true}
 function calcularFum(){const v=getValue('obsFum');if(!v)return;const f=new Date(`${v}T12:00:00`);if(Number.isNaN(f.getTime()))return;const p=new Date(f);p.setDate(p.getDate()+280);setValue('obsFpp',p.toISOString().slice(0,10));const h=new Date();h.setHours(12,0,0,0);const d=Math.floor((h-f)/86400000);if(d>=0&&d<=315){setValue('obsEgSemanas',Math.floor(d/7));setValue('obsEgDias',d%7)}}
 function historiaLocal(c){const hs=[window.historiaActiva,window.historiaActual,window.currentHistoria,window.AURO_HISTORIA_ACTIVA].filter(Boolean);for(const h of hs)if((c.id_historia&&txt(h.id_historia||h.id)===c.id_historia)||(!c.id_historia&&c.id_paciente&&txt(h.id_paciente)===c.id_paciente))return h;for(const l of [window.historiasClinicas,window.historias,window.listaHistoriasClinicas,window.historiasData]){if(!Array.isArray(l))continue;const h=l.find(x=>(c.id_historia&&txt(x.id_historia||x.id)===c.id_historia)||(!c.id_historia&&c.id_paciente&&txt(x.id_paciente)===c.id_paciente));if(h)return h}return null}
+/*
+ * COMPATIBILIDAD DE DATOS HISTÓRICOS IASYN:
+ * AUROSANAX_ANT_GINECO_OBS_V1:: se conserva solo como marcador de
+ * serialización de antecedentes ya existentes. No es una conexión,
+ * endpoint, Spreadsheet ID ni recurso activo de AUROSANAX PRUEBA.
+ */
 const ANT_GINECO_OBS_MARKER='AUROSANAX_ANT_GINECO_OBS_V1::';
 
 function fechaHistoriaAntecedentes(h){
@@ -828,6 +834,12 @@ function evento(ev){
   limpiar();
   setTimeout(()=>cargar(true),80)
 }
+/*
+ * COMPATIBILIDAD TEMPORAL IASYN:
+ * Los eventos y claves aurosanax:* / aurosanax_* que aparecen debajo
+ * siguen siendo contratos internos compartidos con index y otros módulos.
+ * No deben renombrarse de forma aislada.
+ */
 function inicializar(){if(!renderizar())return;auroInstalarDetectorCambiosObstetricia();interceptar();['aurosanax:atencion-activa','aurosanax:atencion-seleccionada','aurosanax:atencion-iniciada','aurosanax:paciente-seleccionado','aurosanax:historia-cargada','aurosanax:atencion-limpiada','aurosanax:paciente-limpiado'].forEach(n=>window.addEventListener(n,evento));setInterval(()=>{const a=resolverAtencion(),id=txt(a?.id_atencion||a?.id);if(id!==ultimoIdAtencion){contextoSeleccionado=a||null;cargar(true)}},1500);cargar(true);console.info(`${MODULO} cargado. ${VERSION}`)}
 window.AurosanaxObstetricia={version:VERSION,inicializar,cargar,guardar,limpiar,obtenerRegistroActual:()=>registroActual?{...registroActual}:null,obtenerContexto:contextoActual};window.inicializarObstetricia=inicializar;window.cargarObstetriciaPorAtencion=cargar;window.guardarObstetriciaERP=guardar;window.limpiarObstetriciaERP=limpiar;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inicializar);else inicializar();
 })();
