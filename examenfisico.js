@@ -1,5 +1,5 @@
 /* ==========================================================
-   AUROSANAX - examenfisico.js
+   IASYN - examenfisico.js
    Versión corregida: evita repetición de 'Otros hallazgos' y regiones no valoradas
    Módulo extraído desde index.html para Examen Físico.
    Fase segura: puede conectarse sin borrar todavía el código del index.
@@ -124,7 +124,7 @@ function recopilarRegionalExamenFisico(){
     const observacion = getValueIfExists(hcRegionalInputId(region)).trim();
 
     /*
-      CORRECCIÓN AUROSANAX:
+      CORRECCIÓN IASYN:
       Antes el sistema guardaba "NO VALORADO" por cada región.
       Eso generaba múltiples tarjetas repetidas de "Otros hallazgos" al cargar la historia previa.
       Ahora solo se guarda la región cuando existe un hallazgo real o una observación real.
@@ -856,7 +856,7 @@ window.hcCie10CatalogoBase = window.hcCie10CatalogoBase || [
     "nombre": "Trastorno de piel y tejido subcutáneo no especificado"
   }
 ];
-/* AUROSANAX FIX SEGURO 2026-06-28
+/* IASYN FIX SEGURO 2026-06-28
    Evita error de consola: Identifier 'hcDxResultadosActuales' has already been declared.
    No cambia la lógica del módulo: si el index ya creó estas variables, se reutilizan;
    si no existen, se crean como variables globales seguras en window.
@@ -884,7 +884,7 @@ function agregarDiagnosticoCie10DesdeResultado(index){const d=hcDxResultadosActu
 function agregarDiagnosticoCie10Manual(){const codigo=getValueIfExists('hcDxCodigoBuscar').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');const nombre=getValueIfExists('hcDxNombreBuscar').trim();if(!codigo||!nombre){alert('Ingrese código CIE-10 y nombre de diagnóstico, o seleccione un resultado de la búsqueda.');return;}agregarDiagnosticoCie10(codigo,nombre);}
 
 /* ==========================================================
-   AUROSANAX DX - LIMPIEZA QUIRÚRGICA DEL BUSCADOR CIE-10
+   IASYN DX - LIMPIEZA QUIRÚRGICA DEL BUSCADOR CIE-10
    ----------------------------------------------------------
    Alcance EXCLUSIVAMENTE visual:
    - Vacía código y nombre de búsqueda.
@@ -945,7 +945,7 @@ function agregarDiagnosticoCie10(codigo,nombre){
   auroLimpiarBusquedaDiagnosticoCie10(true);
 
   /* ======================================================
-     AUROSANAX - CONEXIÓN SEGURA CIE-10 INTELIGENTE
+     IASYN - CONEXIÓN SEGURA CIE-10 INTELIGENTE
      ------------------------------------------------------
      - Se ejecuta solo después de agregar el diagnóstico.
      - No modifica Examen Físico, Plan, Recetas ni guardado.
@@ -957,7 +957,7 @@ function agregarDiagnosticoCie10(codigo,nombre){
       window.auroCie10InteligenteBuscarProtocolo(codigo, nombre);
     }
   }catch(error){
-    console.warn('AUROSANAX EXAMEN: CIE-10 inteligente no pudo ejecutarse.', error);
+    console.warn('IASYN EXAMEN: CIE-10 inteligente no pudo ejecutarse.', error);
   }
 }
 function eliminarDiagnosticoCie10(index){hcDiagnosticosSeleccionados.splice(index,1);if(hcDiagnosticosSeleccionados.length&&!hcDiagnosticosSeleccionados.some(d=>d.principal))hcDiagnosticosSeleccionados[0].principal=true;renderDiagnosticosSeleccionados();sincronizarDiagnosticosConCamposHistoria();}
@@ -1009,7 +1009,7 @@ function recopilarEvaluacionesPlan(){
 
 
 /* ==========================================================
-   AUROSANAX - Examen físico v3.2
+   IASYN - Examen físico v3.2
    Conexión completa, ayudas clínicas y compatibilidad con datos previos.
    No modifica base de datos ni Code.gs.
    ========================================================== */
@@ -1032,7 +1032,7 @@ function auroEscapeHtml(valor){
 
 
 /* ==========================================================
-   AUROSANAX FIX QUIRÚRGICO IMC 2026-07-27
+   IASYN FIX QUIRÚRGICO IMC 2026-07-27
    Alcance exclusivo:
    - Valida el valor IMC antes de mostrarlo o restaurarlo.
    - Si llega una fecha ISO, objeto Date o serial de Google Sheets
@@ -1169,7 +1169,7 @@ function auroPartirExamenFisicoPrevio(texto){
   const patronEtiquetas = etiquetasConocidas.map(escapeRegex).join('|');
 
   /*
-    CORRECCIÓN AUROSANAX:
+    CORRECCIÓN IASYN:
     Algunas historias antiguas quedaron guardadas así:
     "Otros hallazgos: No valorado | Abdomen: No valorado".
     Eso hacía que el visor interpretara todo como "Otros hallazgos" repetido.
@@ -1416,7 +1416,7 @@ function auroMostrarExamenFisicoPrevio(h){
   ].filter(Boolean);
 
   /*
-    AUROSANAX v3.2.2
+    IASYN v3.2.2
     Corrección visual:
     Si la historia anterior solo contiene textos repetidos de "No valorado",
     se oculta la caja previa para no mostrar un bloque largo y confuso.
@@ -1554,7 +1554,7 @@ function auroCargarExamenFisicoDesdeHistoria(h, modo){
   if(!h) return;
 
   /*
-    AUROSANAX FIX QUIRÚRGICO POR ATENCIÓN
+    IASYN FIX QUIRÚRGICO POR ATENCIÓN
     La tarjeta inferior y los campos del formulario solo se cargan
     cuando el registro proviene de examenes_fisicos para la atención activa.
     La historia clínica general no alimenta esta tarjeta.
@@ -1773,7 +1773,7 @@ function auroCargarDiagnosticosDesdeHistoria(h){
 }
 
 /* ==========================================================
-   AUROSANAX - APOYO CLÍNICO DE SIGNOS VITALES V1
+   IASYN - APOYO CLÍNICO DE SIGNOS VITALES V1
    MODIFICACIÓN QUIRÚRGICA Y NO BLOQUEANTE
    ----------------------------------------------------------
    ALCANCE EXCLUSIVO:
@@ -1826,7 +1826,7 @@ function auroVitalPresion(valor){
 }
 
 /* ==========================================================
-   AUROSANAX - PA DOBLE CAMPO / COMPATIBILIDAD QUIRÚRGICA
+   IASYN - PA DOBLE CAMPO / COMPATIBILIDAD QUIRÚRGICA
    - Interfaz: sistólica + diastólica.
    - Contrato histórico: hcPA conserva "120/80".
    - No cambia payload, backend, Sheets ni registros existentes.
@@ -2095,7 +2095,7 @@ function auroActualizarAyudaIMC(){
   }
 
   /*
-    AUROSANAX FIX QUIRÚRGICO IMC 2026-08-21
+    IASYN FIX QUIRÚRGICO IMC 2026-08-21
     Punto único de sincronización visual:
     - hcIMC sigue siendo la fuente real del módulo.
     - hcImcResumen y hcCardIMC solo reflejan ese mismo valor.
@@ -2323,7 +2323,7 @@ window.auroNormalizarVitalesExamen = auroNormalizarVitalesExamen;
 
 
 /* ==========================================================
-   AUROSANAX - Plan v3.3.1
+   IASYN - Plan v3.3.1
    Conexión completa del Plan sin tocar otros módulos.
    - Carga previa limpia
    - Plan terapéutico / evaluaciones / indicaciones / control
@@ -2333,7 +2333,7 @@ window.auroNormalizarVitalesExamen = auroNormalizarVitalesExamen;
 
 
 /* ==========================================================
-   AUROSANAX - EXAMEN FÍSICO POR ATENCIÓN
+   IASYN - EXAMEN FÍSICO POR ATENCIÓN
    Fase 1: estado temporal por id_atencion
    ----------------------------------------------------------
    Objetivo:
@@ -2462,7 +2462,7 @@ function auroExamenFisicoAplicarDiagnosticos(lista){
       sincronizarDiagnosticosConCamposHistoria();
     }
   }catch(error){
-    console.warn('AUROSANAX EXAMEN: no se pudieron restaurar diagnósticos temporales.', error);
+    console.warn('IASYN EXAMEN: no se pudieron restaurar diagnósticos temporales.', error);
   }
 }
 
@@ -2502,7 +2502,7 @@ function limpiarExamenFisicoTemporal(){
   }catch(e){}
 
   /*
-    AUROSANAX FIX LIMPIEZA 2026-07-05
+    IASYN FIX LIMPIEZA 2026-07-05
     Nueva consulta debe quedar limpia.
     Antes se limpiaban signos vitales, pero podían quedar checks de sistemas/regionales
     por memoria temporal, paneles renderizados o campos fuera del barrido principal.
@@ -2614,7 +2614,7 @@ function cargarExamenFisicoTemporal(idAtencion){
 }
 
 /* ==========================================================
-   AUROSANAX - EXAMEN FÍSICO PERSISTENTE POR ATENCIÓN
+   IASYN - EXAMEN FÍSICO PERSISTENTE POR ATENCIÓN
    Fase 2: conexión segura con Apps Script y pestaña examenes_fisicos.
    ----------------------------------------------------------
    Reglas:
@@ -2661,7 +2661,7 @@ function auroExamenFisicoIdAtencionActual(){
 
 
 /* ==========================================================
-   AUROSANAX - DETALLE ESTRUCTURADO EXAMEN FÍSICO
+   IASYN - DETALLE ESTRUCTURADO EXAMEN FÍSICO
    Conecta examen_fisico.js con:
    - examenes_sistemas
    - examenes_regionales
@@ -2847,9 +2847,9 @@ async function auroGuardarDetalleExamenFisicoSheets(idExamen){
   const resultado = await res.json();
 
   if(resultado && resultado.success){
-    console.log('AUROSANAX EXAMEN: detalle guardado en sistemas/regionales/diagnosticos:', resultado);
+    console.log('IASYN EXAMEN: detalle guardado en sistemas/regionales/diagnosticos:', resultado);
   }else{
-    console.warn('AUROSANAX EXAMEN: no se confirmó guardado de detalle.', resultado);
+    console.warn('IASYN EXAMEN: no se confirmó guardado de detalle.', resultado);
   }
 
   return resultado;
@@ -2961,7 +2961,7 @@ function auroCargarExamenFisicoDesdeSheet(registro){
 function auroCargarSignosVitalesPreatencion_(registro){
   if(!registro || String(registro.origen_preatencion || '').toUpperCase() !== 'SI') return false;
 
-  /* AUROSANAX PREATENCIÓN V2: precarga visual únicamente.
+  /* IASYN PREATENCIÓN V2: precarga visual únicamente.
      NO crea id_examen ni escribe en examenes_fisicos. */
   setValueIfExists('hcPeso', registro.peso_kg || '');
   setValueIfExists('hcTalla', registro.talla_cm || '');
@@ -2983,7 +2983,7 @@ function auroCargarSignosVitalesPreatencion_(registro){
   if(typeof auroActualizarApoyoSignosVitales === 'function') auroActualizarApoyoSignosVitales();
 
   guardarExamenFisicoTemporal();
-  console.log('AUROSANAX EXAMEN: Preatención V2 precargada; el examen real se crea solo al guardar.');
+  console.log('IASYN EXAMEN: Preatención V2 precargada; el examen real se crea solo al guardar.');
   return true;
 }
 
@@ -3000,7 +3000,7 @@ async function auroCargarExamenFisicoDesdeSheetsPorAtencion(idAtencion){
 
     if(registro && registro.id_examen){
       auroCargarExamenFisicoDesdeSheet(registro);
-      console.log('AUROSANAX EXAMEN: cargado desde examenes_fisicos:', idAtencion);
+      console.log('IASYN EXAMEN: cargado desde examenes_fisicos:', idAtencion);
     }else if(registro && String(registro.origen_preatencion || '').toUpperCase() === 'SI'){
       limpiarExamenFisicoTemporal();
       auroMostrarExamenFisicoPrevio(null);
@@ -3008,12 +3008,12 @@ async function auroCargarExamenFisicoDesdeSheetsPorAtencion(idAtencion){
     }else{
       limpiarExamenFisicoTemporal();
       auroMostrarExamenFisicoPrevio(null);
-      console.log('AUROSANAX EXAMEN: sin examen físico guardado para esta atención:', idAtencion);
+      console.log('IASYN EXAMEN: sin examen físico guardado para esta atención:', idAtencion);
     }
 
     return registro || null;
   }catch(error){
-    console.warn('AUROSANAX EXAMEN: no se pudo cargar desde examenes_fisicos.', error);
+    console.warn('IASYN EXAMEN: no se pudo cargar desde examenes_fisicos.', error);
     return null;
   }
 }
@@ -3023,12 +3023,12 @@ async function auroGuardarExamenFisicoSheets(){
   const payloadData = auroExamenFisicoPayload();
 
   if(!API){
-    console.warn('AUROSANAX EXAMEN: API_URL no definida. No se guardó examen físico.');
+    console.warn('IASYN EXAMEN: API_URL no definida. No se guardó examen físico.');
     return { success:false, message:'API_URL no definida' };
   }
 
   if(!payloadData || !payloadData.id_atencion){
-    console.warn('AUROSANAX EXAMEN: no hay id_atencion activa. No se guardó examen físico.');
+    console.warn('IASYN EXAMEN: no hay id_atencion activa. No se guardó examen físico.');
     return { success:false, message:'No hay id_atencion activa' };
   }
 
@@ -3070,14 +3070,14 @@ async function auroGuardarExamenFisicoSheets(){
         await auroGuardarDetalleExamenFisicoSheets(idExamenGuardado);
       }
 
-      console.log('AUROSANAX EXAMEN: guardado en examenes_fisicos:', resultado);
+      console.log('IASYN EXAMEN: guardado en examenes_fisicos:', resultado);
     }else{
-      console.warn('AUROSANAX EXAMEN: Apps Script no confirmó guardado.', resultado);
+      console.warn('IASYN EXAMEN: Apps Script no confirmó guardado.', resultado);
     }
 
     return resultado;
   }catch(error){
-    console.error('AUROSANAX EXAMEN: error guardando en examenes_fisicos.', error);
+    console.error('IASYN EXAMEN: error guardando en examenes_fisicos.', error);
     return { success:false, message:error.message };
   }
 }
@@ -3091,7 +3091,7 @@ function cambiarExamenFisicoPorAtencion(idAtencion){
   idAtencion = String(idAtencion || '').trim();
 
   /*
-    AUROSANAX - CORRECCIÓN QUIRÚRGICA HISTORIA NUEVA
+    IASYN - CORRECCIÓN QUIRÚRGICA HISTORIA NUEVA
     Si todavía no existe id_atencion, se limpia únicamente el estado
     temporal del Examen físico y la selección CIE-10 heredada.
     No elimina registros guardados ni modifica Apps Script.
@@ -3112,7 +3112,7 @@ function cambiarExamenFisicoPorAtencion(idAtencion){
   window.examenFisicoState.atencionActual = idAtencion;
 
   /*
-    AUROSANAX FIX CAMBIO DE CONSULTA 2026-07-05
+    IASYN FIX CAMBIO DE CONSULTA 2026-07-05
     Regla:
     - Nueva consulta / nuevo id_atencion: limpiar primero.
     - Luego consultar Sheets.
@@ -3132,7 +3132,7 @@ function cambiarExamenFisicoPorAtencion(idAtencion){
 
   auroCargarExamenFisicoDesdeSheetsPorAtencion(idAtencion);
 
-  console.log('AUROSANAX EXAMEN: atención activa sincronizada:', idAtencion, '(limpio hasta validar Sheets)');
+  console.log('IASYN EXAMEN: atención activa sincronizada:', idAtencion, '(limpio hasta validar Sheets)');
 }
 
 function auroInstalarAutoGuardadoExamenFisicoPorAtencion(){
@@ -3154,7 +3154,7 @@ function auroInstalarAutoGuardadoExamenFisicoPorAtencion(){
   });
 
   /* ==========================================================
-     AUROSANAX FASE 2 - GUARDADO PERSISTENTE AISLADO POR MÓDULO
+     IASYN FASE 2 - GUARDADO PERSISTENTE AISLADO POR MÓDULO
      Corrección quirúrgica:
      - El botón general "Actualizar historia" existe en todas las pestañas.
      - Antes, cualquier clic sobre ese botón creaba/actualizaba una fila en
@@ -3221,7 +3221,7 @@ function auroInstalarAutoGuardadoExamenFisicoPorAtencion(){
       /* No crear una fila nueva completamente vacía. */
       if(!idExamenExistente && !hayDatosFisicos){
         console.log(
-          'AUROSANAX EXAMEN: guardado omitido; no existen datos físicos reales.'
+          'IASYN EXAMEN: guardado omitido; no existen datos físicos reales.'
         );
         return;
       }
@@ -3245,7 +3245,14 @@ window.auroGuardarDetalleExamenFisicoSheets = auroGuardarDetalleExamenFisicoShee
 window.auroInstalarAutoGuardadoExamenFisicoPorAtencion = auroInstalarAutoGuardadoExamenFisicoPorAtencion;
 
 /*
-  AUROSANAX - LIMPIEZA CIE-10 AL INICIAR HISTORIA NUEVA
+  COMPATIBILIDAD TEMPORAL IASYN:
+  El evento literal "aurosanax:historia-nueva" se conserva únicamente como contrato
+  interno heredado entre módulos. No es una URL, endpoint, base de datos ni conexión
+  con AUROSANAX PRUEBA. No renombrarlo aisladamente hasta migrar también sus emisores.
+*/
+
+/*
+  IASYN - LIMPIEZA CIE-10 AL INICIAR HISTORIA NUEVA
   Escucha únicamente la señal emitida por Pacientes/Agenda.
   Mantiene intactas las consultas existentes y sus diagnósticos guardados.
 */
@@ -3274,7 +3281,7 @@ if(!window.__auroExamenHistoriaNuevaListenerInstalado){
       }
     }catch(error){
       console.warn(
-        'AUROSANAX EXAMEN: no se pudo limpiar CIE-10 al iniciar historia nueva.',
+        'IASYN EXAMEN: no se pudo limpiar CIE-10 al iniciar historia nueva.',
         error
       );
     }
@@ -3293,7 +3300,7 @@ if(document.readyState === 'loading'){
 
 
 /* ==========================================================
-   AUROSANAX FIX 2026-07-20
+   IASYN FIX 2026-07-20
    GUARDADO AUTÓNOMO DE DIAGNÓSTICOS POR ATENCIÓN
    ----------------------------------------------------------
    Motivo:
@@ -3309,7 +3316,7 @@ if(document.readyState === 'loading'){
    ========================================================== */
 
 /* ==========================================================
-   AUROSANAX FIX QUIRÚRGICO DIAGNÓSTICO INDEPENDIENTE 2026-08-07
+   IASYN FIX QUIRÚRGICO DIAGNÓSTICO INDEPENDIENTE 2026-08-07
    ----------------------------------------------------------
    Alcance exclusivo:
    - Diagnósticos de la atención activa.
@@ -3487,7 +3494,7 @@ async function auroGuardarDiagnosticosAtencionActual(opciones){
     let visorRefrescado = false;
 
     /*
-      AUROSANAX DX - EDICIÓN ABIERTA AUTORITATIVA
+      IASYN DX - EDICIÓN ABIERTA AUTORITATIVA
       -------------------------------------------
       El comportamiento histórico se conserva para todos los demás flujos.
       Solo el guardado explícito de edición de atención abierta puede pedir
@@ -3501,7 +3508,7 @@ async function auroGuardarDiagnosticosAtencionActual(opciones){
           visorRefrescado = true;
         }
       }catch(e){
-        console.warn('AUROSANAX DIAGNÓSTICOS: guardado confirmado, pero no se pudo refrescar el visor.', e);
+        console.warn('IASYN DIAGNÓSTICOS: guardado confirmado, pero no se pudo refrescar el visor.', e);
       }
     }
 
@@ -3517,7 +3524,7 @@ async function auroGuardarDiagnosticosAtencionActual(opciones){
       data:resultado
     };
   }catch(error){
-    console.error('AUROSANAX DIAGNÓSTICOS: error guardando directamente por atención.', error);
+    console.error('IASYN DIAGNÓSTICOS: error guardando directamente por atención.', error);
     return {success:false,message:error?.message || String(error)};
   }
 }
@@ -3528,7 +3535,7 @@ window.auroGuardarDiagnosticosAtencionActual =
 
 
 /* ==========================================================
-   AUROSANAX FIX DEFINITIVO 2026-07-20
+   IASYN FIX DEFINITIVO 2026-07-20
    UN SOLO BOTÓN OFICIAL: PROTOCOLO CLÍNICO SUGERIDO
    ----------------------------------------------------------
    Botón que se conserva:
@@ -3649,7 +3656,7 @@ async function auroEjecutarBotonOficialAplicarPlan(boton){
     );
 
     console.log(
-      'AUROSANAX: diagnóstico guardado y protocolo aplicado mediante el botón oficial.',
+      'IASYN: diagnóstico guardado y protocolo aplicado mediante el botón oficial.',
       {
         id_atencion: resultado.id_atencion,
         id_examen: resultado.id_examen,
@@ -3658,7 +3665,7 @@ async function auroEjecutarBotonOficialAplicarPlan(boton){
     );
   }catch(error){
     console.error(
-      'AUROSANAX: no se completó el flujo único Diagnóstico → Plan.',
+      'IASYN: no se completó el flujo único Diagnóstico → Plan.',
       error
     );
 
@@ -3679,7 +3686,7 @@ function auroInstalarFlujoUnicoDiagnosticoPlan(){
   window.__auroFlujoUnicoDiagnosticoPlanInstalado = true;
 
   /*
-    AUROSANAX CORRECCIÓN QUIRÚRGICA:
+    IASYN CORRECCIÓN QUIRÚRGICA:
     - Se conserva oculto el botón secundario de Integración clínica.
     - Se elimina únicamente la captura global del clic del botón oficial.
     - El botón morado vuelve a ejecutar directamente
@@ -3707,7 +3714,7 @@ window.auroInstalarFlujoUnicoDiagnosticoPlan =
 
 
 /* ==========================================================
-   AUROSANAX - ACTUALIZAR HISTORIA DESDE DIAGNÓSTICO 2026-08-07
+   IASYN - ACTUALIZAR HISTORIA DESDE DIAGNÓSTICO 2026-08-07
    ----------------------------------------------------------
    - Solo actúa si el panel Diagnóstico está activo/visible.
    - No guarda Examen Físico.
@@ -3745,13 +3752,13 @@ function auroInstalarActualizarDiagnosticoIndependiente_(){
       if(typeof window.auroGuardarDiagnosticosAtencionActual !== 'function') return;
       const resultado = await window.auroGuardarDiagnosticosAtencionActual();
       if(!resultado || resultado.success !== true){
-        console.warn('AUROSANAX DIAGNÓSTICOS: actualización no confirmada.', resultado);
+        console.warn('IASYN DIAGNÓSTICOS: actualización no confirmada.', resultado);
         return;
       }
       if(resultado.sin_cambios){
-        console.log('AUROSANAX DIAGNÓSTICOS: sin cambios reales; no se escribió en Sheets.');
+        console.log('IASYN DIAGNÓSTICOS: sin cambios reales; no se escribió en Sheets.');
       }else{
-        console.log('AUROSANAX DIAGNÓSTICOS: actualización independiente confirmada.', resultado);
+        console.log('IASYN DIAGNÓSTICOS: actualización independiente confirmada.', resultado);
       }
     }, 450);
   }, true);
@@ -3763,13 +3770,13 @@ if(document.readyState === 'loading'){
   auroInstalarActualizarDiagnosticoIndependiente_();
 }
 
-/* AUROSANAX - Confirmación de carga del módulo */
+/* IASYN - Confirmación de carga del módulo */
 window.auroExamenFisicoModuloCargado = true;
-console.log('AUROSANAX examenfisico.js cargado correctamente');
-/* AUROSANAX FIX APLICADO: limpieza completa sistemas/regionales por nueva consulta */
+console.log('IASYN examenfisico.js cargado correctamente');
+/* IASYN FIX APLICADO: limpieza completa sistemas/regionales por nueva consulta */
 
 /* ==========================================================
-   AUROSANAX - EXAMEN FÍSICO
+   IASYN - EXAMEN FÍSICO
    BARRERA SIN CAMBIOS REALES V1
    ----------------------------------------------------------
    OBJETIVO QUIRÚRGICO:
@@ -3912,7 +3919,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
         sistemas = window.auroRecopilarSistemasEstructurados();
       }
     }catch(error){
-      console.warn('AUROSANAX EXAMEN V1: no se pudo firmar sistemas.', error);
+      console.warn('IASYN EXAMEN V1: no se pudo firmar sistemas.', error);
     }
 
     try{
@@ -3920,7 +3927,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
         regionales = window.auroRecopilarRegionalesEstructurados();
       }
     }catch(error){
-      console.warn('AUROSANAX EXAMEN V1: no se pudo firmar regionales.', error);
+      console.warn('IASYN EXAMEN V1: no se pudo firmar regionales.', error);
     }
 
     try{
@@ -3928,7 +3935,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
         diagnosticos = window.auroRecopilarDiagnosticosEstructurados();
       }
     }catch(error){
-      console.warn('AUROSANAX EXAMEN V1: no se pudo firmar diagnósticos.', error);
+      console.warn('IASYN EXAMEN V1: no se pudo firmar diagnósticos.', error);
     }
 
     return {
@@ -4043,7 +4050,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
         }
       }catch(error){
         invalidar_('error_capturando_baseline');
-        console.warn('AUROSANAX EXAMEN V1: no se pudo capturar baseline tras cargar.', error);
+        console.warn('IASYN EXAMEN V1: no se pudo capturar baseline tras cargar.', error);
       }
 
       return resultado;
@@ -4093,7 +4100,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
           };
 
           console.log(
-            'AUROSANAX EXAMEN: sin cambios reales; guardado omitido antes del POST.',
+            'IASYN EXAMEN: sin cambios reales; guardado omitido antes del POST.',
             resultadoSinCambios
           );
 
@@ -4106,7 +4113,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
           se utiliza el guardador histórico exactamente como estaba.
         */
         console.warn(
-          'AUROSANAX EXAMEN V1: no se pudo comprobar no-op; se conserva guardado original.',
+          'IASYN EXAMEN V1: no se pudo comprobar no-op; se conserva guardado original.',
           error
         );
       }
@@ -4126,13 +4133,13 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
           );
         }catch(error){
           console.warn(
-            'AUROSANAX EXAMEN V1: guardado confirmado, pero no se pudo renovar baseline.',
+            'IASYN EXAMEN V1: guardado confirmado, pero no se pudo renovar baseline.',
             error
           );
         }
 
         /*
-          AUROSANAX - REFRESCO VISUAL QUIRÚRGICO V2
+          IASYN - REFRESCO VISUAL QUIRÚRGICO V2
           ------------------------------------------------------------
           Solo después de un guardado REAL confirmado:
           1) relee el mismo examen por id_atencion para hidratar en memoria
@@ -4177,7 +4184,7 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
               se altera su resultado ni se reintenta la escritura.
             */
             console.warn(
-              'AUROSANAX EXAMEN V2: guardado correcto; no se pudo refrescar la hora visual.',
+              'IASYN EXAMEN V2: guardado correcto; no se pudo refrescar la hora visual.',
               error
             );
           }
@@ -4225,6 +4232,6 @@ console.log('AUROSANAX examenfisico.js cargado correctamente');
   };
 
   console.log(
-    'AUROSANAX examenfisico.js: BARRERA SIN CAMBIOS REALES V1 instalada.'
+    'IASYN examenfisico.js: BARRERA SIN CAMBIOS REALES V1 instalada.'
   );
 })();
