@@ -1,5 +1,5 @@
 /****************************************************************
- AUROSANAX ERP
+ IASYN ERP
  plan.js
  ACTUALIZACIÓN QUIRÚRGICA: CONTEXTO UNIFICADO POR ATENCIÓN v20.1
  MODULACIÓN PLAN - FASE 5 EVALUACIONES / NAVEGACIÓN SEGURA
@@ -34,6 +34,21 @@
  - Ayudas rápidas para frecuencia, duración e indicaciones.
  - Ampliación controlada de la tabla solo en escritorio.
 ****************************************************************/
+
+
+/* ============================================================
+   IASYN - NOTA DE AISLAMIENTO / COMPATIBILIDAD
+   ------------------------------------------------------------
+   Este módulo no contiene URLs directas a AUROSANAX, Google Drive
+   ni Apps Script. El backend se obtiene desde API_URL, cuya fuente
+   autoritativa debe ser index.html de IASYN.
+
+   Se conservan temporalmente eventos `aurosanax:*`, aliases globales
+   de Diagnóstico/Seguridad y la clave `aurosanax_recetas_emitidas_v1`
+   porque siguen siendo contratos internos compartidos entre módulos.
+   Renombrarlos solo en plan.js rompería la sincronización clínica.
+   No representan una conexión activa con AUROSANAX PRUEBA.
+============================================================ */
 
 
 /* ============================================================
@@ -74,7 +89,7 @@ function normalizarTextoPlan(t){
 
 
 /* ============================================================
-   AUROSANAX PLAN - COMPATIBILIDAD TEXTO / JSON COMPACTO
+   IASYN PLAN - COMPATIBILIDAD TEXTO / JSON COMPACTO
    Intervención quirúrgica para receta_medica e indicaciones_paciente.
    - Los registros nuevos se guardan como arreglos JSON compactos.
    - Los registros antiguos en texto continúan siendo compatibles.
@@ -138,7 +153,7 @@ function auroPlanTextoClinicoAJSON(valor){
 }
 
 /* ============================================================
-   AUROSANAX PLAN 29 - FECHA CLÍNICA LOCAL SEGURA
+   IASYN PLAN 29 - FECHA CLÍNICA LOCAL SEGURA
    - Usa fecha local del navegador, no UTC.
    - Formato estable para fecha_plan: YYYY-MM-DD.
    - No modifica creado_en ni actualizado_en.
@@ -541,7 +556,7 @@ function auroPlanOrdenesUnicas(lista){
 }
 
 /* ============================================================
-   AUROSANAX FIX QUIRÚRGICO INTERCONSULTA 2026-08-22
+   IASYN FIX QUIRÚRGICO INTERCONSULTA 2026-08-22
    - Una misma interconsulta no se duplica al completar motivo/observaciones.
    - Conserva datos clínicos existentes ante campos vacíos/default.
    - Mantiene separadas interconsultas con profesionales explícitamente distintos.
@@ -709,7 +724,7 @@ window.interconsultasPlanSeleccionadas = Array.isArray(window.interconsultasPlan
    CATÁLOGO BASE DE MEDICAMENTOS
 ============================================================ */
 
-window.MEDICAMENTOS_AUROSANAX_BASE = window.MEDICAMENTOS_AUROSANAX_BASE || [
+window.MEDICAMENTOS_IASYN_BASE = window.MEDICAMENTOS_IASYN_BASE || [
     {cat:'GINECOLOGÍA', med:'Tinidazol', pres:'500 mg tableta', via:'VO', frec:'según esquema médico', dur:'según indicación', ind:'Tomar después de alimentos'},
     {cat:'GINECOLOGÍA', med:'Metronidazol', pres:'500 mg tableta', via:'VO', frec:'cada 12 horas', dur:'7 días', ind:'Tomar después de alimentos'},
     {cat:'GINECOLOGÍA', med:'Clotrimazol', pres:'óvulo vaginal', via:'Vaginal', frec:'cada noche', dur:'7 noches', ind:'Aplicar antes de dormir'},
@@ -727,12 +742,15 @@ window.MEDICAMENTOS_AUROSANAX_BASE = window.MEDICAMENTOS_AUROSANAX_BASE || [
     {cat:'OTROS', med:'Probióticos', pres:'cápsula/sobre', via:'VO', frec:'cada día', dur:'10 a 30 días', ind:''}
 ];
 
+/* Compatibilidad temporal con módulos heredados que aún consulten el nombre anterior. */
+window.MEDICAMENTOS_AUROSANAX_BASE = window.MEDICAMENTOS_IASYN_BASE;
+
 
 /* ============================================================
    CATÁLOGO BASE DE ÓRDENES MÉDICAS
 ============================================================ */
 
-window.ORDENES_MEDICAS_AUROSANAX_BASE = window.ORDENES_MEDICAS_AUROSANAX_BASE || [
+window.ORDENES_MEDICAS_IASYN_BASE = window.ORDENES_MEDICAS_IASYN_BASE || [
     {cat:'LABORATORIOS', orden:'Biometría hemática completa'},
     {cat:'LABORATORIOS', orden:'Glucosa en ayunas'},
     {cat:'LABORATORIOS', orden:'Insulina basal'},
@@ -770,6 +788,9 @@ window.ORDENES_MEDICAS_AUROSANAX_BASE = window.ORDENES_MEDICAS_AUROSANAX_BASE ||
     {cat:'PROCEDIMIENTOS', orden:'PRP'},
     {cat:'OTROS', orden:'Control médico'}
 ];
+
+/* Compatibilidad temporal con módulos heredados que aún consulten el nombre anterior. */
+window.ORDENES_MEDICAS_AUROSANAX_BASE = window.ORDENES_MEDICAS_IASYN_BASE;
 
 
 /* ============================================================
@@ -865,7 +886,7 @@ async function cambiarPlanPorAtencion(idAtencion){
         window.planState.atencionActual = idAtencion;
 
         /*
-          AUROSANAX FIX QUIRÚRGICO:
+          IASYN FIX QUIRÚRGICO:
           - En una atención abierta se conservan los cambios temporales al navegar
             entre pestañas de la misma consulta.
           - En una atención finalizada, al pulsar Ver se fuerza la recarga desde
@@ -949,7 +970,7 @@ async function cambiarPlanPorAtencion(idAtencion){
 
             return planCargado;
         }catch(error){
-            console.warn('AUROSANAX PLAN: no se pudo cargar Plan desde Sheets.', error);
+            console.warn('IASYN PLAN: no se pudo cargar Plan desde Sheets.', error);
             return null;
         }
     }
@@ -1092,7 +1113,7 @@ function limpiarPlanTemporal(){
 
 /* ============================================================
    SUGERENCIAS TERAPÉUTICAS AGRUPADAS POR DIAGNÓSTICO CIE-10
-   AUROSANAX PLAN 28 - TARJETAS COMPACTAS + REACTIVACIÓN CONTROLADA
+   IASYN PLAN 28 - TARJETAS COMPACTAS + REACTIVACIÓN CONTROLADA
    ------------------------------------------------------------
    OBJETIVO
    - Mantener las tarjetas por cada diagnóstico de la atención.
@@ -1154,7 +1175,7 @@ function auroPlanProtocolosDiagnosticosActuales(){
             if(Array.isArray(lista)) return lista;
         }
     }catch(error){
-        console.warn('AUROSANAX PLAN: no se pudieron leer protocolos desde Diagnóstico.', error);
+        console.warn('IASYN PLAN: no se pudieron leer protocolos desde Diagnóstico.', error);
     }
 
     const lista = window.auroDiagnosticosState?.protocolos;
@@ -1171,7 +1192,7 @@ function auroPlanDiagnosticosActuales(){
             if(Array.isArray(lista)) return lista;
         }
     }catch(error){
-        console.warn('AUROSANAX PLAN: no se pudieron leer diagnósticos.', error);
+        console.warn('IASYN PLAN: no se pudieron leer diagnósticos.', error);
     }
 
     const lista = window.auroDiagnosticosState?.diagnosticos;
@@ -1234,7 +1255,7 @@ window.__auroPlanSeleccionSugerenciasDx =
         : new Set();
 
 /*
-   AUROSANAX PLAN 28 - ESTADO VISUAL COMPACTO
+   IASYN PLAN 28 - ESTADO VISUAL COMPACTO
    Solo controla qué tarjeta diagnóstica está desplegada.
    No se persiste, no modifica Plan, Diagnóstico ni Google Sheets.
 */
@@ -1623,8 +1644,8 @@ function auroPlanBuscarMedicamentoBaseSugerido(nombre){
     const objetivo = normalizarTextoPlan(nombre);
     if(!objetivo) return null;
 
-    const base = Array.isArray(window.MEDICAMENTOS_AUROSANAX_BASE)
-        ? window.MEDICAMENTOS_AUROSANAX_BASE
+    const base = Array.isArray(window.MEDICAMENTOS_IASYN_BASE)
+        ? window.MEDICAMENTOS_IASYN_BASE
         : [];
 
     let exacto = base.find(item =>
@@ -1886,8 +1907,8 @@ function renderMedicamentoSugerencias(){
 
     const q = normalizarMedTexto(input.value);
 
-    const base = Array.isArray(window.MEDICAMENTOS_AUROSANAX_BASE)
-        ? window.MEDICAMENTOS_AUROSANAX_BASE
+    const base = Array.isArray(window.MEDICAMENTOS_IASYN_BASE)
+        ? window.MEDICAMENTOS_IASYN_BASE
         : [];
 
     const res = base
@@ -2239,8 +2260,8 @@ function renderOrdenesSugerencias(){
     const q = normalizarOrdenTexto(input.value);
     const tipoFiltro = normalizarOrdenTexto(auroPlanGetValue('hcOrdenTipo'));
 
-    const base = Array.isArray(window.ORDENES_MEDICAS_AUROSANAX_BASE)
-        ? window.ORDENES_MEDICAS_AUROSANAX_BASE
+    const base = Array.isArray(window.ORDENES_MEDICAS_IASYN_BASE)
+        ? window.ORDENES_MEDICAS_IASYN_BASE
         : [];
 
     const res = base
@@ -2328,7 +2349,7 @@ function eliminarOrdenMedica(i){
     recopilarOrdenesMedicasPlan();
     guardarPlanTemporal();
 
-    /* AUROSANAX PLAN 28: al retirar una orden del Plan, vuelve a quedar seleccionable en su tarjeta. */
+    /* IASYN PLAN 28: al retirar una orden del Plan, vuelve a quedar seleccionable en su tarjeta. */
     auroPlanRenderSugerenciasDiagnosticas();
 }
 
@@ -2400,7 +2421,7 @@ function limpiarOrdenesMedicasPlan(){
 
 
 /* ============================================================
-   AUROSANAX PLAN - FIX QUIRÚRGICO INTERCONSULTA v29
+   IASYN PLAN - FIX QUIRÚRGICO INTERCONSULTA v29
    PERSISTENCIA + RECARGA VISIBLE
    - Restaura los campos del formulario desde la interconsulta real
      de la atención cargada.
@@ -2978,7 +2999,7 @@ function instalarResponsivePlanAndroid(){
 
       @media(min-width:981px){
         /*
-          AUROSANAX PLAN - ENSANCHAMIENTO PROFESIONAL SOLO ESCRITORIO
+          IASYN PLAN - ENSANCHAMIENTO PROFESIONAL SOLO ESCRITORIO
           - Extiende únicamente la caja de medicamentos hacia la derecha.
           - Mantiene alineado el borde izquierdo original.
           - No usa transformaciones, centrados forzados ni porcentajes rígidos.
@@ -3196,17 +3217,31 @@ async function auroPlanApiPost(accion, data){
 
 
 /* ============================================================
-   AUROSANAX PLAN 26 - CONTROL DE CORRECCIÓN CLÍNICA
+   IASYN PLAN 26 - CONTROL DE CORRECCIÓN CLÍNICA
    - Atención abierta: guardado normal sin preguntas.
    - Atención finalizada: el backend solicita justificativo.
    - Fuera de plazo: enmienda excepcional si Configuración la permite.
    - La decisión temporal pertenece al servidor.
 ============================================================ */
 function auroPlanTokenControlClinico(){
+    /*
+      IASYN: se intenta primero el contrato propio.
+      Los nombres AUROSANAX se conservan solo como compatibilidad temporal
+      mientras Seguridad e index terminan su migración coordinada.
+    */
+    try{
+        if(window.IASYN_SEGURIDAD && typeof window.IASYN_SEGURIDAD.obtenerToken === 'function'){
+            return String(window.IASYN_SEGURIDAD.obtenerToken() || '').trim();
+        }
+    }catch(e){}
     try{
         if(window.AUROSANAX_SEGURIDAD && typeof window.AUROSANAX_SEGURIDAD.obtenerToken === 'function'){
             return String(window.AUROSANAX_SEGURIDAD.obtenerToken() || '').trim();
         }
+    }catch(e){}
+    try{
+        const tokenIASYN = String(sessionStorage.getItem('iasyn_seguridad_token') || '').trim();
+        if(tokenIASYN) return tokenIASYN;
     }catch(e){}
     try{ return String(sessionStorage.getItem('aurosanax_seguridad_token') || '').trim(); }catch(e){}
     return '';
@@ -3289,7 +3324,7 @@ async function auroPlanApiPostConControlClinico(accion, data){
 
 function auroPlanObtenerContextoAtencionSeguro(){
     /*
-      AUROSANAX - integración quirúrgica con atenciones.js
+      IASYN - integración quirúrgica con atenciones.js
       Fuente preferente: obtenerContextoAtencionActual().
       Mantiene compatibilidad total con la lógica anterior.
     */
@@ -3301,7 +3336,7 @@ function auroPlanObtenerContextoAtencionSeguro(){
             }
         }
     }catch(error){
-        console.warn('AUROSANAX PLAN: no se pudo leer el contexto unificado de la atención.', error);
+        console.warn('IASYN PLAN: no se pudo leer el contexto unificado de la atención.', error);
     }
 
     try{
@@ -3442,7 +3477,7 @@ function auroPlanObtenerMedicoIdSeguro(){
     const el = document.getElementById('hcIdMedico');
     if(el && el.value) return el.value;
 
-    return 'MED-AUROSANAX';
+    return 'MED-IASYN';
 }
 
 function auroPlanPrepararDatosSheets(){
@@ -3452,7 +3487,7 @@ function auroPlanPrepararDatosSheets(){
     auroSincronizarPlanAntesGuardar();
 
     /*
-      AUROSANAX v29 - refuerzo defensivo de persistencia.
+      IASYN v29 - refuerzo defensivo de persistencia.
       Si existe información escrita en Interconsulta, se vuelve a fusionar
       justo antes de construir el payload. No guarda por sí solo: únicamente
       protege el contenido del botón Guardar plan clínico.
@@ -3794,7 +3829,7 @@ async function cargarPlanClinicoDesdeSheets(idAtencion){
         (idAtencionActual && idAtencionActual !== idAtencion)
     ){
         console.warn(
-            'AUROSANAX PLAN: se descartó una respuesta tardía de otra atención.',
+            'IASYN PLAN: se descartó una respuesta tardía de otra atención.',
             {
                 solicitada: idAtencion,
                 actual: idAtencionActual,
@@ -3805,7 +3840,7 @@ async function cargarPlanClinicoDesdeSheets(idAtencion){
     }
 
     /*
-      AUROSANAX FIX:
+      IASYN FIX:
       Si la consulta no tiene Plan guardado en planes_clinicos,
       se deja el Plan limpio. No se arrastra información de otra consulta.
     */
@@ -3825,7 +3860,7 @@ async function cargarPlanClinicoDesdeSheets(idAtencion){
             receta: ''
         };
         auroPlanRefrescarVistas();
-        console.log('AUROSANAX PLAN: atención sin plan guardado, pantalla limpia:', idAtencion);
+        console.log('IASYN PLAN: atención sin plan guardado, pantalla limpia:', idAtencion);
         return null;
     }
 
@@ -3929,7 +3964,7 @@ async function cargarPlanClinicoDesdeSheets(idAtencion){
     sincronizarPlanConReceta();
     guardarPlanTemporal();
 
-    console.log('AUROSANAX PLAN: plan cargado desde Sheets para atención:', idAtencion, plan);
+    console.log('IASYN PLAN: plan cargado desde Sheets para atención:', idAtencion, plan);
 
     return plan;
 
@@ -3964,7 +3999,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 /* ============================================================
    AUTO-CARGA AL CAMBIAR CONSULTA / ATENCIÓN
-   AUROSANAX FIX QUIRÚRGICO v22:
+   IASYN FIX QUIRÚRGICO v22:
    - Plan escucha directamente los eventos maestros de Atenciones.
    - La nueva atención se considera fuente autoritativa inmediata.
    - Limpia el Plan anterior antes de cualquier carga asíncrona.
@@ -4013,7 +4048,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 /* ============================================================
    ESTADO VISUAL BOTÓN GUARDAR PLAN
-   AUROSANAX FIX:
+   IASYN FIX:
    Esta función queda como dueña del botón Actualizar Plan Clínico.
    Evita doble clic y actualiza el panel premium al finalizar.
 ============================================================ */
@@ -4069,13 +4104,13 @@ function auroPlanUXAtencionResumen(){
 function auroPlanUXGuardarFechaLocal(idAtencion, fechaHora){
     try{
         if(!idAtencion) return;
-        const key = 'auro_plan_ultimas_actualizaciones_v1';
+        const key = 'iasyn_plan_ultimas_actualizaciones_v1';
         const raw = localStorage.getItem(key);
         const mapa = raw ? JSON.parse(raw) : {};
         mapa[idAtencion] = fechaHora;
         localStorage.setItem(key, JSON.stringify(mapa));
     }catch(e){
-        console.warn('AUROSANAX PLAN UX: no se pudo guardar fecha local del Plan.', e);
+        console.warn('IASYN PLAN UX: no se pudo guardar fecha local del Plan.', e);
     }
 }
 
@@ -4168,7 +4203,7 @@ async function guardarPlanClinicoConUX(btn){
 
     }catch(e){
 
-        console.error('AUROSANAX PLAN: error guardando plan clínico.', e);
+        console.error('IASYN PLAN: error guardando plan clínico.', e);
         alert('No se pudo guardar el Plan clínico.\n\n' + (e && e.message ? e.message : 'Revise el control de correcciones.'));
 
         if(btn){
@@ -4189,13 +4224,13 @@ window.guardarPlanClinicoConUX = guardarPlanClinicoConUX;
 window.auroPlanGuardarPlanClinicoConUXPlanJS = guardarPlanClinicoConUX;
 
 /* ============================================================
-   AUROSANAX PLAN - CORRECCIÓN NAVEGACIÓN MISMA ATENCIÓN
+   IASYN PLAN - CORRECCIÓN NAVEGACIÓN MISMA ATENCIÓN
    - No limpia el Plan al volver a la misma consulta
    - No recarga Sheets sobre cambios temporales de la misma atención
    - Verifica la atención activa antes de una carga diferida============================================================ */
 
 /* ============================================================
-   AUROSANAX PLAN - FIX SINCRONIZACIÓN ID_ATENCION
+   IASYN PLAN - FIX SINCRONIZACIÓN ID_ATENCION
    - Fuente oficial: getAtencionActiva()
    - planState se usa como cache, no como autoridad clínica
    - Bloquea mezcla entre consultas
@@ -4204,7 +4239,7 @@ window.auroPlanGuardarPlanClinicoConUXPlanJS = guardarPlanClinicoConUX;
 ============================================================ */
 
 /* ============================================================
-   AUROSANAX PLAN - CORRECCIÓN DEFINITIVA CAMBIO DE CONSULTA
+   IASYN PLAN - CORRECCIÓN DEFINITIVA CAMBIO DE CONSULTA
    - Diferencia atención interna de atención realmente renderizada
    - Evita guardar datos viejos bajo una atención nueva
    - Limpia medicamentos y campos de receta al cambiar consulta
@@ -4212,7 +4247,7 @@ window.auroPlanGuardarPlanClinicoConUXPlanJS = guardarPlanClinicoConUX;
 ============================================================ */
 
 /* ============================================================
-   AUROSANAX PLAN - RESTABLECIMIENTO AISLADO Y SEGURO v25
+   IASYN PLAN - RESTABLECIMIENTO AISLADO Y SEGURO v25
    BASE: PLAN 22 ESTABLE
    REGLAS:
    - No reemplaza, envuelve ni modifica Aplicar plan.
@@ -4612,7 +4647,7 @@ window.auroPlanGuardarPlanClinicoConUXPlanJS = guardarPlanClinicoConUX;
 })();
 
 /* ============================================================
-   AUROSANAX PLAN - CORRECCIÓN QUIRÚRGICA DE CARGA ESTABLE v26
+   IASYN PLAN - CORRECCIÓN QUIRÚRGICA DE CARGA ESTABLE v26
    - cambiarPlanPorAtencion espera la carga real desde Sheets.
    - Se elimina únicamente el retraso artificial de 80 ms.
    - Las consultas GET del Plan usan cache:no-store y parámetro temporal.
@@ -4622,7 +4657,7 @@ window.auroPlanGuardarPlanClinicoConUXPlanJS = guardarPlanClinicoConUX;
 ============================================================ */
 
 /* ============================================================
-   AUROSANAX PLAN - RECARGA SEGURA DE ATENCIÓN FINALIZADA v27
+   IASYN PLAN - RECARGA SEGURA DE ATENCIÓN FINALIZADA v27
    - Al pulsar Ver sobre una atención finalizada, recarga el Plan desde Sheets
      aunque el id_atencion coincida con la atención ya renderizada.
    - Conserva el comportamiento anterior para atenciones abiertas:
