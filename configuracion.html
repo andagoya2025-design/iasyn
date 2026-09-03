@@ -1501,7 +1501,7 @@
 <body>
 <div class="app">
   <aside class="sidebar" id="sidebar">
-    <div class="brand"><div class="brand-logo">AU</div><div><h1>AUROSANAX</h1><small>Configuración</small></div></div>
+    <div class="brand"><div class="brand-logo">IA</div><div><h1>IASYN</h1><small>Configuración</small></div></div>
     <div class="menu-title">Administración</div>
     <div class="menu">
       <a href="index.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
@@ -1517,7 +1517,7 @@
 
   <main class="main">
     <div class="topbar">
-      <div class="d-flex gap-2 align-items-center"><button class="btn-line mobile-menu" onclick="toggleSidebar()"><i class="bi bi-list"></i></button><div><h2>Configuración</h2><p>Administración general del sistema AUROSANAX</p></div></div>
+      <div class="d-flex gap-2 align-items-center"><button class="btn-line mobile-menu" onclick="toggleSidebar()"><i class="bi bi-list"></i></button><div><h2>Configuración</h2><p>Administración general del sistema IASYN</p></div></div>
       <div class="cfg-session">
         <div class="cfg-session-card" aria-label="Usuario autenticado">
           <div class="cfg-session-avatar" id="cfgSesionAvatar">AU</div>
@@ -1615,7 +1615,10 @@
               <div class="security-card">
                 <div class="security-card-head">
                   <div><h5>Usuarios del sistema</h5><p>Altas, edición, bloqueo y administración de accesos.</p></div>
-                  <button class="btn-auro" type="button" onclick="abrirNuevoUsuario()"><i class="bi bi-person-plus me-1"></i> Nuevo usuario</button>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button class="btn-line" type="button" onclick="abrirCambioClaveUsuario()"><i class="bi bi-key me-1"></i> Cambiar mi contraseña</button>
+                    <button class="btn-auro" type="button" onclick="abrirNuevoUsuario()"><i class="bi bi-person-plus me-1"></i> Nuevo usuario</button>
+                  </div>
                 </div>
                 <div class="security-kpis">
                   <div class="security-kpi"><span>Usuarios</span><strong id="segKpiUsuarios">0</strong></div>
@@ -1943,7 +1946,7 @@
   }
 
   function obtenerSeguridadConfiguracion_(){
-    return window.AUROSANAX_SEGURIDAD || null;
+    return window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD || null;
   }
 
   function redirigirSegunPermisosConfiguracion_(seguridad, usuario){
@@ -2043,7 +2046,7 @@
     }
 
     const token = seguridad.obtenerTokenSesion();
-    const usuario = seguridad.obtenerUsuarioActual();
+    let usuario = seguridad.obtenerUsuarioActual();
 
     if(!token || !usuario){
       seguridad.limpiarSesion();
@@ -2052,12 +2055,18 @@
     }
 
     try{
-      const validacion = await seguridad.validarSesionActual(true);
-      if(!validacion || validacion.valida !== true){
+      const validacion = await seguridad.validarSesionActual({forzarServidor:true});
+      if(!validacion || validacion.success !== true){
         seguridad.limpiarSesion();
         window.location.replace('login.html');
         return null;
       }
+
+      usuario =
+        validacion.usuario ||
+        (validacion.sesion && validacion.sesion.usuario_publico) ||
+        seguridad.obtenerUsuarioActual() ||
+        usuario;
     }catch(error){
       console.error('No se pudo validar la sesión en Configuración:', error);
       seguridad.limpiarSesion();
@@ -2206,13 +2215,18 @@
   }
 
   function obtenerSeguridad(){
-    return window.AUROSANAX_SEGURIDAD || null;
+    return window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD || null;
   }
 
   function normalizarListaSeguridad(respuesta){
-    if(Array.isArray(respuesta)) return respuesta;
-    if(respuesta && Array.isArray(respuesta.data)) return respuesta.data;
-    return [];
+    const lista = Array.isArray(respuesta)
+      ? respuesta
+      : (respuesta && Array.isArray(respuesta.data) ? respuesta.data : []);
+
+    return lista.map(u => Object.assign({}, u || {}, {
+      nombre: (u && (u.nombre || u.nombre_completo || u.usuario)) || '',
+      nombre_completo: (u && (u.nombre_completo || u.nombre || u.usuario)) || ''
+    }));
   }
 
   function etiquetaEstadoSeguridad(estado){
@@ -2887,7 +2901,11 @@
       return;
     }
 
-    const token = sessionStorage.getItem('aurosanax_seguridad_token') || '';
+    const seguridad = obtenerSeguridad();
+    const token = seguridad && typeof seguridad.obtenerTokenSesion === 'function'
+      ? seguridad.obtenerTokenSesion()
+      : '';
+
     if(!token){
       mostrarCambioClave('No existe una sesión activa. Inicie sesión nuevamente.', true);
       return;
@@ -2901,26 +2919,11 @@
     }
 
     try{
-      const respuesta = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify({
-          accion: 'cambiarClaveUsuario',
-          data: {
-            clave_actual: claveActual,
-            clave_nueva: claveNueva,
-            token: token
-          }
-        })
-      });
-
-      if(!respuesta.ok){
-        throw new Error('Error de conexión HTTP ' + respuesta.status + '.');
+      if(!seguridad || typeof seguridad.cambiarClave !== 'function'){
+        throw new Error('El módulo de seguridad no expone el cambio de contraseña.');
       }
 
-      const resultado = await respuesta.json();
+      const resultado = await seguridad.cambiarClave(claveActual, claveNueva);
 
       if(!resultado || resultado.success !== true){
         throw new Error(
@@ -2932,18 +2935,28 @@
 
       // Actualiza la bandera local para que la sesión ya no figure como temporal.
       try{
-        const rawSesion = sessionStorage.getItem('aurosanax_seguridad_sesion');
+        const rawSesion =
+          sessionStorage.getItem('iasyn_seguridad_sesion') ||
+          sessionStorage.getItem('aurosanax_seguridad_sesion');
         if(rawSesion){
           const sesion = JSON.parse(rawSesion);
           sesion.requiere_cambio_clave = false;
-          sessionStorage.setItem('aurosanax_seguridad_sesion', JSON.stringify(sesion));
+          const claveSesionLocal = sessionStorage.getItem('iasyn_seguridad_sesion')
+            ? 'iasyn_seguridad_sesion'
+            : 'aurosanax_seguridad_sesion';
+          sessionStorage.setItem(claveSesionLocal, JSON.stringify(sesion));
         }
 
-        const rawUsuario = sessionStorage.getItem('aurosanax_seguridad_usuario');
+        const rawUsuario =
+          sessionStorage.getItem('iasyn_seguridad_usuario') ||
+          sessionStorage.getItem('aurosanax_seguridad_usuario');
         if(rawUsuario){
           const usuario = JSON.parse(rawUsuario);
           usuario.requiere_cambio_clave = 'NO';
-          sessionStorage.setItem('aurosanax_seguridad_usuario', JSON.stringify(usuario));
+          const claveUsuarioLocal = sessionStorage.getItem('iasyn_seguridad_usuario')
+            ? 'iasyn_seguridad_usuario'
+            : 'aurosanax_seguridad_usuario';
+          sessionStorage.setItem(claveUsuarioLocal, JSON.stringify(usuario));
         }
       }catch(errorSesion){
         console.warn('No se pudo actualizar la bandera local de cambio de clave:', errorSesion);
@@ -3013,7 +3026,7 @@
 </script>
 <script src="config-centro.js"></script>
 <script src="config-finanzas.js"></script>
-<script src="seguridad.js?v=20260902-R3"></script>
+<script src="seguridad.js?v=20260902-R4-USUARIOS"></script>
 <script src="auditoria_clinica.js?v=2.0.0"></script>
 
 </body>
