@@ -1,5 +1,5 @@
 /***********************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP
  Archivo: diagnosticos.js
  Módulo: Diagnósticos e integración clínica por atención
  Versión: 1.5.4 - profesional, tipo y motivo para Apoyo Cognitivo con IA
@@ -34,7 +34,7 @@
     window.auroDiagnosticos &&
     typeof window.auroDiagnosticos.inicializar === 'function'
   ){
-    console.warn('AUROSANAX DIAGNÓSTICOS: el módulo completo ya estaba cargado.');
+    console.warn('IASYN DIAGNÓSTICOS: el módulo completo ya estaba cargado.');
     window.auroDiagnosticos.inicializar();
     return;
   }
@@ -42,8 +42,17 @@
   /* Recuperación ante una carga anterior incompleta o interrumpida. */
   window.auroDiagnosticosModuloCargado = false;
 
-  const MODULO = 'AUROSANAX DIAGNÓSTICOS';
+  const MODULO = 'IASYN DIAGNÓSTICOS';
   const VERSION = '1.5.12';
+  /*
+    COMPATIBILIDAD TEMPORAL IASYN:
+    Las claves de sessionStorage/localStorage, eventos aurosanax:* y nombres
+    globales heredados que permanecen en este archivo son contratos internos
+    compartidos con index, Examen Físico, Plan, Seguridad y apoyoIA.html.
+    No contienen por sí mismos endpoint, Spreadsheet ID ni recurso activo de
+    AUROSANAX PRUEBA. Deben migrarse coordinadamente, no desde Diagnósticos
+    de forma aislada.
+  */
   const APOYO_IA_SESSION_KEY = 'aurosanax_apoyoIA_contexto';
   const RELEASE = '20260823_dx_cero_sugerencias_plan_v3';
 
@@ -3503,6 +3512,10 @@
      - Evita exponer key, número, dosis, JSON o metadatos internos.
      ========================================================== */
 
+  /*
+   * Marcador histórico de serialización. Se conserva para leer datos ya
+   * existentes; no representa una conexión con AUROSANAX PRUEBA.
+   */
   const AURO_DX_ANT_PERSONALES_MARKER = 'AUROSANAX_ANT_PERSONALES_V1::';
 
   function auroDxParseAntecedentesPersonales(valor){
@@ -3673,6 +3686,10 @@
      - Compatible con AUROSANAX_ANT_FAMILIARES_V1:: y JSON puro.
      - Conserva compatibilidad con texto familiar antiguo.
      ========================================================== */
+  /*
+   * Marcador histórico de serialización. Se conserva para leer datos ya
+   * existentes; no representa una conexión con AUROSANAX PRUEBA.
+   */
   const AURO_DX_ANT_FAMILIARES_MARKER = 'AUROSANAX_ANT_FAMILIARES_V1::';
 
   function auroDxParseAntecedentesFamiliares(valor){
@@ -5913,6 +5930,7 @@
   window.auroSincronizarEditorCie10DesdeDiagnosticos =
     sincronizarEditorCie10DesdeDiagnosticos;
 
+  window.iasynDiagnosticos = window.auroDiagnosticos;
   window.auroDiagnosticosModuloCargado = true;
 
   function arrancarDiagnosticos(){
