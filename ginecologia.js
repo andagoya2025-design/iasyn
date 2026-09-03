@@ -1,5 +1,5 @@
 /* ============================================================
-   AUROSANAX CLINICAL ERP DEMO
+   IASYN CLINICAL ERP
    MÓDULO: GINECOLOGÍA
    Archivo: ginecologia.js
    Versión: 1.0.0
@@ -13,8 +13,8 @@
 (function () {
   'use strict';
 
-  const MODULO = 'AUROSANAX_GINECOLOGIA_V1';
-  const STORAGE_KEY = 'aurosanax_ginecologia_local_v1';
+  const MODULO = 'IASYN_GINECOLOGIA_V1';
+  const STORAGE_KEY = 'iasyn_ginecologia_local_v1';
   const VERSION = '20260720_ginecologia_v1_5_sintomas_movidos_anamnesis';
 
   let registroActual = null;
@@ -436,6 +436,12 @@
     return true;
   }
 
+  /*
+    COMPATIBILIDAD DE DATOS HISTÓRICOS IASYN:
+    El literal AUROSANAX_ANT_GINECO_OBS_V1:: se conserva exclusivamente para
+    leer antecedentes ya serializados con ese marcador. No es una conexión,
+    endpoint, Spreadsheet ID ni recurso de AUROSANAX PRUEBA.
+  */
   const ANT_GINECO_OBS_MARKER = 'AUROSANAX_ANT_GINECO_OBS_V1::';
 
   function fechaHistoriaValor(h) {
@@ -884,6 +890,12 @@
     if(!renderizar()) return;
     interceptarShowScreen();
 
+    /*
+      COMPATIBILIDAD TEMPORAL IASYN:
+      Los eventos aurosanax:* y las claves heredadas de contexto se mantienen
+      mientras index y los demás módulos usen ese contrato. No conectan con
+      AUROSANAX PRUEBA y no deben renombrarse en este archivo de forma aislada.
+    */
     ['aurosanax:atencion-activa','aurosanax:atencion-seleccionada','aurosanax:atencion-iniciada'].forEach(nombre => {
       window.addEventListener(nombre, evento => {
         const detalle = normalizarDetalleAtencion(evento?.detail);
