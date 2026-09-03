@@ -25,7 +25,7 @@
   'use strict';
 
   // IASYN: identificador técnico de build para verificar caché del navegador.
-  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R3';
+  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R4-USUARIOS';
 
   /* ========================================================
      CONFIGURACIÓN TÉCNICA
@@ -1955,7 +1955,10 @@
 
 
   async function validarSesionActual(opciones) {
-    const configuracion = opciones || {};
+    const configuracion =
+      opciones === true
+        ? { forzarServidor: true }
+        : (opciones || {});
     const forzarServidor = configuracion.forzarServidor === true;
     const sesionLocal = obtenerSesionLocalVigente_();
 
@@ -1971,7 +1974,7 @@
         revalidarSesionEnSegundoPlano_();
       }
 
-      return sesionLocal;
+      return Object.assign({}, sesionLocal, { valida: true });
     }
 
     try {
@@ -1982,7 +1985,7 @@
 
       if (respuesta && respuesta.success === true) {
         actualizarSesionValidada(respuesta);
-        return respuesta;
+        return Object.assign({}, respuesta, { valida: true });
       }
 
       limpiarSesionLocal();
@@ -2001,18 +2004,173 @@
     }
   }
 
+
+  /* ========================================================
+     IASYN R4 - PUENTE DE COMPATIBILIDAD CONFIGURACIÓN / SEGURIDAD
+     --------------------------------------------------------
+     Objetivo:
+     - Unificar la API pública que consume configuracion.html.
+     - Mantener intactos login, hash, sesión y endpoints del backend.
+     - Todas las operaciones usan exclusivamente SEGURIDAD_CONFIG.apiUrl,
+       actualmente desplegado para IASYN.
+     ======================================================== */
+
+  function obtenerPermisosEfectivosPublicos_(usuario) {
+    const actual = usuario || obtenerUsuarioActual() || {};
+    return normalizarPermisos(actual.permisos, actual.rol);
+  }
+
+  function obtenerPermisosRolPublicos_(rol) {
+    return normalizarPermisos({}, rol || 'SECRETARIA');
+  }
+
+  function normalizarUsuarioPublicoFrontend_(u) {
+    u = u || {};
+    return Object.assign({}, u, {
+      nombre: u.nombre || u.nombre_completo || u.usuario || '',
+      nombre_completo: u.nombre_completo || u.nombre || u.usuario || '',
+      permisos: obtenerPermisosEfectivosPublicos_(u)
+    });
+  }
+
+  async function listarUsuariosPublicos_() {
+    const token = exigirTokenAdministrativo();
+    const respuesta = await apiGet('listarUsuariosSeguros', { token: token });
+    const lista = Array.isArray(respuesta)
+      ? respuesta
+      : (respuesta && Array.isArray(respuesta.data) ? respuesta.data : []);
+    return lista.map(normalizarUsuarioPublicoFrontend_);
+  }
+
+  async function crearUsuarioPublico_(data) {
+    data = data || {};
+    const token = exigirTokenAdministrativo();
+
+    return await apiPost('crearUsuarioSeguro', {
+      usuario: textoSeguro(data.usuario).toLowerCase(),
+      nombre_completo: textoSeguro(data.nombre_completo || data.nombre),
+      rol: data.rol || 'SECRETARIA',
+      estado: data.estado || 'Activo',
+      email: data.email || '',
+      telefono: data.telefono || '',
+      id_medico: data.id_medico || '',
+      permisos: data.permisos || {},
+      clave_temporal: data.clave_temporal || data.clave || '',
+      requiere_cambio_clave:
+        data.requiere_cambio_clave === undefined
+          ? 'SI'
+          : data.requiere_cambio_clave,
+      token: token
+    });
+  }
+
+  async function actualizarUsuarioPublico_(data) {
+    data = data || {};
+    const token = exigirTokenAdministrativo();
+
+    return await apiPost('editarUsuarioSeguro', {
+      id_usuario: data.id_usuario || '',
+      usuario: textoSeguro(data.usuario).toLowerCase(),
+      nombre_completo: textoSeguro(data.nombre_completo || data.nombre),
+      rol: data.rol || 'SECRETARIA',
+      estado: data.estado || 'Activo',
+      email: data.email || '',
+      telefono: data.telefono || '',
+      id_medico: data.id_medico || '',
+      permisos: data.permisos || {},
+      requiere_cambio_clave:
+        data.requiere_cambio_clave === undefined
+          ? ''
+          : data.requiere_cambio_clave,
+      token: token
+    });
+  }
+
+  async function restablecerClavePublico_(idUsuario, clave) {
+    const token = exigirTokenAdministrativo();
+
+    return await apiPost('restablecerClaveUsuario', {
+      id_usuario: textoSeguro(idUsuario),
+      clave_temporal: String(clave || ''),
+      requiere_cambio_clave: 'SI',
+      token: token
+    });
+  }
+
+  async function cambiarClavePublico_(claveActual, claveNueva) {
+    const token = obtenerTokenSesion();
+    if (!token) throw new Error('No existe una sesión activa.');
+
+    return await apiPost('cambiarClaveUsuario', {
+      clave_actual: String(claveActual || ''),
+      clave_nueva: String(claveNueva || ''),
+      token: token
+    });
+  }
+
+  async function listarBitacoraPublica_(filtros) {
+    const token = exigirTokenAdministrativo();
+    const respuesta = await apiGet('listarBitacoraSegura', { token: token });
+    const lista = Array.isArray(respuesta)
+      ? respuesta
+      : (respuesta && Array.isArray(respuesta.data) ? respuesta.data : []);
+
+    const limite = Math.max(1, Math.min(Number((filtros || {}).limite || 500), 500));
+    return lista.slice(0, limite);
+  }
+
+  /*
+   * El backend actual no expone inventario global de tokens activos.
+   * Se devuelve la sesión local autenticada como vista segura y real,
+   * sin inventar sesiones de otros dispositivos.
+   */
+  async function listarSesionesPublicas_() {
+    const sesion = obtenerSesionLocal();
+    const usuario = obtenerUsuarioActual();
+    const token = obtenerTokenSesion();
+
+    if (!token || !sesion || !usuario) return [];
+
+    return [{
+      token: token,
+      id_sesion: sesion.id_sesion || '',
+      usuario: usuario.usuario || '',
+      rol: usuario.rol || '',
+      inicio: sesion.inicio || '',
+      ultima_actividad: '',
+      expira_en: sesion.expira_en || '',
+      estado: 'Activo',
+      local: true
+    }];
+  }
+
+  async function revocarSesionPublica_(token) {
+    const actual = obtenerTokenSesion();
+    if (!token || token !== actual) {
+      return {
+        success: false,
+        message: 'El backend actual solo permite cerrar la sesión local desde esta pantalla.'
+      };
+    }
+
+    await cerrarSesion();
+    return { success: true, message: 'Sesión cerrada.' };
+  }
+
   /* ========================================================
      API PÚBLICA DEL MÓDULO
      Permite que index.html use estas funciones después.
      ======================================================== */
 
-  window.AUROSANAX_SEGURIDAD = Object.freeze({
+  const IASYN_SEGURIDAD_API_PUBLICA = Object.freeze({
     iniciarSesion: iniciarSesion,
     validarSesion: validarSesionExistenteYRedirigir,
     validarSesionActual: validarSesionActual,
     inicializarAdministracion: inicializarAdministracionSeguridad,
     cargarBitacora: cargarBitacoraSeguridad,
     cerrarSesion: cerrarSesion,
+
+    // Nombres históricos conservados por compatibilidad
     obtenerToken: obtenerTokenSesion,
     obtenerSesion: obtenerSesionLocal,
     obtenerUsuario: obtenerUsuarioActual,
@@ -2020,13 +2178,34 @@
     cargarUsuarios: cargarUsuariosSeguridad,
     abrirUsuario: abrirFormularioUsuario,
     guardarUsuario: guardarUsuarioDesdeConfiguracion,
-    restablecerClave: restablecerClaveUsuarioDesdeConfiguracion,
     alternarClave: alternarClaveCampo,
-    tienePermiso: tienePermiso,
     aplicarPermisos: aplicarVisibilidadPorPermisos,
     catalogoPermisos: CATALOGO_PERMISOS,
+
+    // API unificada que consume configuracion.html
+    obtenerTokenSesion: obtenerTokenSesion,
+    obtenerSesionLocal: obtenerSesionLocal,
+    obtenerUsuarioActual: obtenerUsuarioActual,
+    aplicarPermisosDOM: aplicarVisibilidadPorPermisos,
+    CATALOGO_PERMISOS: CATALOGO_PERMISOS,
+    obtenerPermisosEfectivos: obtenerPermisosEfectivosPublicos_,
+    obtenerPermisosRol: obtenerPermisosRolPublicos_,
+    listarUsuarios: listarUsuariosPublicos_,
+    crearUsuario: crearUsuarioPublico_,
+    actualizarUsuario: actualizarUsuarioPublico_,
+    restablecerClave: restablecerClavePublico_,
+    cambiarClave: cambiarClavePublico_,
+    listarBitacora: listarBitacoraPublica_,
+    listarSesiones: listarSesionesPublicas_,
+    revocarSesion: revocarSesionPublica_,
+
+    tienePermiso: tienePermiso,
     formatearFechaHoraEcuador: formatearFechaHoraEcuador,
     configuracion: SEGURIDAD_CONFIG
   });
+
+  // Alias IASYN nuevo + alias histórico para no romper consumidores existentes.
+  window.IASYN_SEGURIDAD = IASYN_SEGURIDAD_API_PUBLICA;
+  window.AUROSANAX_SEGURIDAD = IASYN_SEGURIDAD_API_PUBLICA;
 
 })();
