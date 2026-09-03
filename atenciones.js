@@ -1,5 +1,5 @@
 /* =====================================================
-   AUROSANAX ERP - MÓDULO ATENCIONES 
+   IASYN ERP - MÓDULO ATENCIONES 
    Archivo: atenciones.js
    Versión: 2.4 contexto maestro enriquecido no invasivo + resumen premium + paginación segura
    Objetivo:
@@ -13,7 +13,7 @@
 (function(){
   'use strict';
 
-  const MODULO = 'AUROSANAX_ATENCIONES_V2_0_MOBILE_CARDS';
+  const MODULO = 'IASYN_ATENCIONES_V2_0_MOBILE_CARDS';
   const STORAGE_KEY = 'aurosanax_atenciones_local_v1';
 
   let atencionActivaId = '';
@@ -31,6 +31,16 @@
   let consultasPaginaActual = 1;
   const CONSULTAS_POR_PAGINA = 10;
   const RECETAS_STORAGE_KEY = 'aurosanax_recetas_emitidas_v1';
+
+  /*
+    IASYN - BLINDAJE ANTIDUPLICIDAD
+    Estos locks son de ejecución, no de persistencia:
+    - impiden doble clic/reentrada mientras se crea una atención;
+    - impiden doble finalización simultánea;
+    - no cambian IDs, eventos, storage keys ni contratos heredados.
+  */
+  let creandoAtencionEnCurso = false;
+  let finalizandoAtencionEnCurso = false;
 
   /* Catálogo único de médicos: se consulta desde Configuración mediante Apps Script. */
   let medicosActivosAtenciones = [];
@@ -971,7 +981,7 @@
   }
 
   function usuarioActual(){
-    return 'AUROSANAX ERP';
+    return 'IASYN ERP';
   }
 
   function idNuevo(){
@@ -1357,8 +1367,17 @@
   }
 
   async function crearAtencion(){
-    const p = pacienteActivo();
-    const idPaciente = idPacienteActivo();
+    if(creandoAtencionEnCurso){
+      return null;
+    }
+
+    creandoAtencionEnCurso = true;
+    const btnIniciarLock = $('btnIniciarAtencion');
+    if(btnIniciarLock) btnIniciarLock.disabled = true;
+
+    try{
+      const p = pacienteActivo();
+      const idPaciente = idPacienteActivo();
 
     if(!p || !idPaciente){
       alert('Seleccione primero un paciente desde Pacientes o Historia Clínica.');
@@ -1502,12 +1521,25 @@
       emitirIniciada:true
     });
 
-    renderAtencionesPaciente();
-    return nueva;
+      renderAtencionesPaciente();
+      return nueva;
+    }finally{
+      creandoAtencionEnCurso = false;
+      renderAtencionesPaciente();
+    }
   }
 
   async function finalizarAtencion(){
-    const idPaciente = idPacienteActivo();
+    if(finalizandoAtencionEnCurso){
+      return;
+    }
+
+    finalizandoAtencionEnCurso = true;
+    const btnFinalizarLock = $('btnFinalizarAtencion');
+    if(btnFinalizarLock) btnFinalizarLock.disabled = true;
+
+    try{
+      const idPaciente = idPacienteActivo();
     if(!idPaciente){
       alert('Seleccione primero un paciente.');
       return;
@@ -1557,10 +1589,14 @@
 
     const resultado = await enviarAtencionGoogleSheets(atencionFinalizada, 'editarAtencion');
 
-    if(resultado && resultado.success){
-      alert('Atención finalizada y enviada a Google Sheets.');
-    }else{
-      alert('Atención finalizada localmente, pero no se pudo enviar a Google Sheets. Revise Apps Script o conexión.');
+      if(resultado && resultado.success){
+        alert('Atención finalizada y enviada a Google Sheets.');
+      }else{
+        alert('Atención finalizada localmente, pero no se pudo enviar a Google Sheets. Revise Apps Script o conexión.');
+      }
+    }finally{
+      finalizandoAtencionEnCurso = false;
+      renderAtencionesPaciente();
     }
   }
 
@@ -2485,18 +2521,25 @@
 
 
     if(btnIniciar){
-      btnIniciar.disabled = !!abierta;
-      btnIniciar.style.opacity = abierta ? '0.55' : '1';
-      btnIniciar.style.cursor = abierta ? 'not-allowed' : 'pointer';
+      btnIniciar.disabled = !!abierta || creandoAtencionEnCurso;
+      btnIniciar.style.opacity = (abierta || creandoAtencionEnCurso) ? '0.55' : '1';
+      btnIniciar.style.cursor = (abierta || creandoAtencionEnCurso) ? 'not-allowed' : 'pointer';
+      if(creandoAtencionEnCurso){
+        btnIniciar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Iniciando...';
+      }else{
+        btnIniciar.innerHTML = '<i class="bi bi-play-circle me-1"></i> Iniciar';
+      }
     }
 
     if(btnFinalizar){
-      btnFinalizar.disabled = !abierta;
-      btnFinalizar.style.opacity = abierta ? '1' : '0.55';
-      btnFinalizar.style.cursor = abierta ? 'pointer' : 'not-allowed';
-      btnFinalizar.innerHTML = abierta
-        ? '<i class="bi bi-check-circle me-1"></i> Finalizar'
-        : '<i class="bi bi-lock me-1"></i> Cerrada ✓';
+      btnFinalizar.disabled = !abierta || finalizandoAtencionEnCurso;
+      btnFinalizar.style.opacity = (abierta && !finalizandoAtencionEnCurso) ? '1' : '0.55';
+      btnFinalizar.style.cursor = (abierta && !finalizandoAtencionEnCurso) ? 'pointer' : 'not-allowed';
+      btnFinalizar.innerHTML = finalizandoAtencionEnCurso
+        ? '<i class="bi bi-hourglass-split me-1"></i> Finalizando...'
+        : (abierta
+          ? '<i class="bi bi-check-circle me-1"></i> Finalizar'
+          : '<i class="bi bi-lock me-1"></i> Cerrada ✓');
     }
 
     resumen.textContent = 'Total consultas: ' + arr.length + (arr[0] ? ' · Última: ' + fechaVisual(arr[0].fecha_atencion) : '') + ' · Vista integral activa';
@@ -2977,6 +3020,12 @@
   };
   window.iniciarAtencionActual = crearAtencion;
   window.finalizarAtencionActual = finalizarAtencion;
+
+  /* IASYN: alias moderno; se conservan los globals legacy por compatibilidad. */
+  window.iasynAtenciones = Object.assign(window.iasynAtenciones || {}, {
+    crearAtencion: crearAtencion,
+    finalizarAtencion: finalizarAtencion
+  });
   window.seleccionarAtencion = seleccionarAtencion;
   window.sincronizarContextoAtencion = sincronizarContextoAtencion;
   window.getAtencionActiva = function(){
