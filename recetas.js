@@ -1,5 +1,5 @@
 /* =====================================================
-   AUROSANAX ERP - MÓDULO RECETAS
+   IASYN ERP - MÓDULO RECETAS
    Archivo: recetas.js
    Versión: 2.2 diagnóstico CIE-10 persistente por atención
    Función: vista previa profesional + PDF + historial local filtrado por paciente + paginación + acciones verticales + refresco estable
@@ -9,6 +9,18 @@
    - No modifica Plan automáticamente desde Recetas.
    - Mantiene sincronización Plan → Receta.
    - No modifica pacientes, agenda, dashboard, antecedentes ni examen físico.
+===================================================== */
+
+/* =====================================================
+   IASYN - NOTA DE COMPATIBILIDAD DE AISLAMIENTO
+   -----------------------------------------------------
+   Este módulo no contiene URLs directas de Apps Script, Drive, Sheets
+   ni aurosanax.com. Las claves/eventos `aurosanax_*` / `aurosanax:*`,
+   `window.auroDiagnosticos`, `window.AUROSANAX_SEGURIDAD` y nombres
+   públicos `auro*` que permanecen son contratos internos heredados entre
+   módulos del ERP. Se conservan temporalmente para no romper Atenciones,
+   Diagnóstico, Plan, Seguridad e impresión; deben migrarse de forma
+   coordinada, no archivo por archivo.
 ===================================================== */
 
 (function(){
@@ -35,7 +47,7 @@
   let recetaMedicosCargando = null;
 
   /*
-    AUROSANAX RECETAS 2.5 - VISTA PACIENTE OFICIAL ÚNICA
+    IASYN RECETAS 2.5 - VISTA PACIENTE OFICIAL ÚNICA
     ---------------------------------------------------
     Referencia funcional oficial:
     "Vista paciente / imprimir" del historial de recetas emitidas.
@@ -50,7 +62,7 @@
   let recetaModoTrabajo = 'lectura';
 
   /*
-    AUROSANAX RECETAS 3.0 - EDITOR ESTRUCTURADO ESPEJO
+    IASYN RECETAS 3.0 - EDITOR ESTRUCTURADO ESPEJO
     recMedicamento continúa siendo el campo canónico consumido
     por guardarRecetaERP(). El editor solo sincroniza ese mismo dato.
   */
@@ -615,7 +627,7 @@
       #recetas label[for="recMedicamento"]:before,#recetas label[for="recIndicaciones"]:before,#recetas label[for="recRecomendaciones"]:before{content:"";width:7px;height:7px;border-radius:50%;background:#c23b83;box-shadow:0 0 0 4px #fdf2f8;flex:0 0 auto;}
       #recetaPreview{border-radius:22px!important;}
 
-      /* AUROSANAX RECETAS 2.6 - cabecera clínica y contexto visual */
+      /* IASYN RECETAS 2.6 - cabecera clínica y contexto visual */
       #recetas .auro-receta-context-card{
         grid-template-columns:1fr!important;
         padding:0!important;
@@ -660,7 +672,7 @@
         overflow-wrap:anywhere;
       }
 
-      /* AUROSANAX RECETAS 2.6B - PULIDO VISUAL PREMIUM COMPLETO */
+      /* IASYN RECETAS 2.6B - PULIDO VISUAL PREMIUM COMPLETO */
       #recetas > .cardx > .section-head{
         align-items:flex-end!important;
         gap:18px!important;
@@ -802,7 +814,7 @@
         padding-bottom:12px!important;
       }
 
-      /* AUROSANAX RECETAS 3.0 - Editor tabulado espejo del PDF oficial */
+      /* IASYN RECETAS 3.0 - Editor tabulado espejo del PDF oficial */
       #recetas .auro-rx-editor-shell{
         margin-top:4px;
         border:1px solid #f0d9e6;
@@ -1637,7 +1649,7 @@
       }catch(error){
         recetaMedicosActivos = [];
         recetaMedicosCargados = false;
-        console.warn('AUROSANAX RECETAS: no se pudieron cargar médicos activos.', error);
+        console.warn('IASYN RECETAS: no se pudieron cargar médicos activos.', error);
         return [];
       }finally{
         recetaMedicosCargando = null;
@@ -1678,7 +1690,7 @@
         registro: encontrado || null
       };
     }catch(error){
-      console.warn('AUROSANAX RECETAS: no se pudo resolver médico de la atención.', error);
+      console.warn('IASYN RECETAS: no se pudo resolver médico de la atención.', error);
       return { id_medico:'', nombre:'', registro:null };
     }
   }
@@ -1716,7 +1728,7 @@
 
       return '';
     }catch(error){
-      console.warn('AUROSANAX RECETAS: no se pudo obtener id_medico real.', error);
+      console.warn('IASYN RECETAS: no se pudo obtener id_medico real.', error);
       return '';
     }
   }
@@ -1848,13 +1860,13 @@
       recetaDiagnosticosPorAtencionCache.set(idAtencion, lista);
       return lista;
     }catch(error){
-      console.warn('AUROSANAX RECETAS: no se pudieron consultar diagnósticos de la atención.', error);
+      console.warn('IASYN RECETAS: no se pudieron consultar diagnósticos de la atención.', error);
       return [];
     }
   }
 
   /* =====================================================
-     AUROSANAX RECETAS 2.8 - MULTIDIAGNÓSTICO + PRESENTACIÓN HORIZONTAL
+     IASYN RECETAS 2.8 - MULTIDIAGNÓSTICO + PRESENTACIÓN HORIZONTAL
      ---------------------------------------------------------
      - Diagnóstico sigue siendo la fuente clínica oficial.
      - La receta conserva diagnostico_cie10 principal para compatibilidad.
@@ -1985,7 +1997,7 @@
   }
 
   /*
-     AUROSANAX RECETAS 2.8 - PRESENTACIÓN MULTIDIAGNÓSTICO QUIRÚRGICA
+     IASYN RECETAS 2.8 - PRESENTACIÓN MULTIDIAGNÓSTICO QUIRÚRGICA
      - Un solo diagnóstico conserva la cabecera histórica.
      - Con dos o más, la cabecera muestra solo el principal.
      - Todos los diagnósticos se muestran en una franja horizontal
@@ -2237,16 +2249,27 @@
   }
 
   /* ============================================================
-     AUROSANAX RECETA 31 - CONTROL DE CORRECCIÓN CLÍNICA
+     IASYN RECETA 31 - CONTROL DE CORRECCIÓN CLÍNICA
      La atención abierta sigue editable. El servidor decide cuándo
      corresponde motivo, bloqueo o enmienda excepcional.
   ============================================================ */
   function auroRecetaTokenControlClinico(){
+    /*
+      IASYN: contrato propio primero. Se conserva AUROSANAX_SEGURIDAD y la
+      clave histórica como compatibilidad interna mientras Seguridad/index
+      terminan su migración coordinada. No representan una conexión externa.
+    */
+    try{
+      if(window.IASYN_SEGURIDAD && typeof window.IASYN_SEGURIDAD.obtenerToken === 'function'){
+        return String(window.IASYN_SEGURIDAD.obtenerToken() || '').trim();
+      }
+    }catch(e){}
     try{
       if(window.AUROSANAX_SEGURIDAD && typeof window.AUROSANAX_SEGURIDAD.obtenerToken === 'function'){
         return String(window.AUROSANAX_SEGURIDAD.obtenerToken() || '').trim();
       }
     }catch(e){}
+    try{ return String(sessionStorage.getItem('iasyn_seguridad_token') || '').trim(); }catch(e){}
     try{ return String(sessionStorage.getItem('aurosanax_seguridad_token') || '').trim(); }catch(e){}
     return '';
   }
@@ -2387,7 +2410,7 @@
   }
 
   /* =====================================================
-     AUROSANAX RECETAS 3.6 - ALERGIAS DESDE HISTORIA CLÍNICA
+     IASYN RECETAS 3.6 - ALERGIAS DESDE HISTORIA CLÍNICA
      ---------------------------------------------------------
      Fuente prioritaria: historia clínica vinculada a la receta/atención.
      Respaldo: dato del paciente solo si la historia no contiene alergias.
@@ -2691,7 +2714,7 @@
     const existente = idAtencion ? buscarRecetaActivaPorAtencion(idAtencion) : null;
 
     /*
-      AUROSANAX RECETA 3.8 - EDICIÓN EXPLÍCITA DE RECETA EMITIDA
+      IASYN RECETA 3.8 - EDICIÓN EXPLÍCITA DE RECETA EMITIDA
       Una receta ya existente nunca se corrige solo porque Plan tenga
       medicamentos cargados. Primero debe entrar explícitamente en edición.
       La primera receta conserva el flujo Plan → Receta original.
@@ -2856,7 +2879,7 @@
   }
 
   /* =====================================================
-     AUROSANAX RECETAS 3.8 - BOTÓN INTELIGENTE DESDE PLAN
+     IASYN RECETAS 3.8 - BOTÓN INTELIGENTE DESDE PLAN
      ---------------------------------------------------------
      Un solo botón dentro de Plan:
      - Sin receta oficial: Guardar receta.
@@ -2966,7 +2989,7 @@
   };
 
   /* =====================================================
-     AUROSANAX RECETAS 3.7 - PRIMERA RECETA DE LA ATENCIÓN
+     IASYN RECETAS 3.7 - PRIMERA RECETA DE LA ATENCIÓN
      ---------------------------------------------------------
      Si la atención activa ya fue verificada contra Sheets y no tiene
      ninguna receta emitida, habilita el editor como primera receta.
@@ -3191,7 +3214,7 @@
 
 
   /* =====================================================
-     AUROSANAX RECETAS 3.4 - CÉDULA Y EDAD EN ENCABEZADO
+     IASYN RECETAS 3.4 - CÉDULA Y EDAD EN ENCABEZADO
      Intervención quirúrgica:
      - Calcula edad cumplida desde fecha_nacimiento si no viene informada.
      - Formatea la edad como "N años".
@@ -3318,6 +3341,7 @@
 
   function auroRecetaConfigInstitucional(){
     const candidatos = [
+      window.iasynConfiguracionCentro,
       window.auroConfiguracionCentro,
       window.configuracionCentro,
       window.configCentro,
@@ -3476,7 +3500,7 @@
   }
 
   /*
-     AUROSANAX RECETAS 2.5 - FASES 1 Y 2
+     IASYN RECETAS 2.5 - FASES 1 Y 2
      Tabla institucional compacta para vista previa/PDF.
      Intervención exclusivamente visual:
      - No cambia el JSON, el formulario, Plan, guardado ni Google Sheets.
@@ -3573,7 +3597,7 @@
   }
 
   /* =====================================================
-     AUROSANAX RECETAS 2.6 - CONTEXTO CLÍNICO DE LECTURA
+     IASYN RECETAS 2.6 - CONTEXTO CLÍNICO DE LECTURA
      - Solo presentación y resolución de datos existentes.
      - No escribe ni corrige registros históricos en Google Sheets.
      - No modifica Guardar receta, edición, Plan ni PDF oficial.
@@ -3882,7 +3906,7 @@
   }
 
   /*
-     AUROSANAX RECETAS 3.5 - CABECERA CLÍNICA PREMIUM
+     IASYN RECETAS 3.5 - CABECERA CLÍNICA PREMIUM
      Normaliza únicamente la representación visual de Sexo y alergias.
      No modifica ni persiste datos clínicos.
   */
@@ -3946,7 +3970,7 @@
     const idReceta = r.id_receta || '—';
     const idAtencion = r.id_atencion || '—';
     const idMedico = medico.id_medico || '—';
-    const centro = cfg.nombre || 'AUROSANAX';
+    const centro = cfg.nombre || 'IASYN';
     const estadoClass = String(r.estado).toLowerCase().includes('anulada') ? 'badge-danger' : 'badge-ok';
     const diagnosticosRepresentacion = auroRecetaDiagnosticosRepresentacionHTML(r);
     const diagnosticosPaciente = auroRecetaDiagnosticosListaImpresion(r);
@@ -4073,7 +4097,7 @@
 
 
   /*
-     AUROSANAX RECETAS 2.7 - ORIGINAL / COPIA A4 FINAL
+     IASYN RECETAS 2.7 - ORIGINAL / COPIA A4 FINAL
      Intervención exclusivamente visual para la impresión del paciente.
      No modifica guardado, JSON, Plan, historial, Google Sheets,
      Apps Script, IDs, eventos ni sincronizaciones.
@@ -4450,7 +4474,7 @@
   }
 
   /*
-     AUROSANAX RECETAS 3.1 - DATOS ESTRUCTURADOS PARA REPRESENTACIÓN
+     IASYN RECETAS 3.1 - DATOS ESTRUCTURADOS PARA REPRESENTACIÓN
      Corrige el flujo PDF llamado desde Plan/impresion.js.
      Cuando se trata de la receta activa aún no emitida, usa directamente
      medicamentosPlanSeleccionados como JSON estructurado.
@@ -4537,7 +4561,7 @@
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Vista previa de receta AUROSANAX</title>
+        <title>Vista previa de receta IASYN</title>
         <script>
           (function(){
             var esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
@@ -4834,7 +4858,7 @@
   }
 
   /*
-     AUROSANAX RECETAS 3.0 - MOTOR ÚNICO DE VISTA / IMPRESIÓN / PDF
+     IASYN RECETAS 3.0 - MOTOR ÚNICO DE VISTA / IMPRESIÓN / PDF
      - Plan, Recetas e Historial usan la misma función interna.
      - La delegación segura apunta directamente al motor interno.
      - Evita recursión o sobrescritura por impresion.js.
@@ -5135,7 +5159,7 @@
       );
 
       /*
-        AUROSANAX FIX QUIRÚRGICO - CREADO_EN / ACTUALIZADO_EN
+        IASYN FIX QUIRÚRGICO - CREADO_EN / ACTUALIZADO_EN
         - Una receta NUEVA siempre recibe creado_en y actualizado_en nuevos.
         - Una ACTUALIZACIÓN conserva creado_en únicamente si coinciden
           id_receta e id_atencion con el registro realmente existente.
@@ -6086,6 +6110,9 @@
     }
   });
 
+  /* Alias IASYN sin retirar el contrato heredado consumido por otros módulos. */
+  window.iasynRecetas = window.auroRecetas;
+
   window.cargarRecetasDesdeSheets = cargarRecetasDesdeSheets;
   window.refrescarRecetasDesdeSheets = function(){
     recetaDiagnosticosPorAtencionCache.clear();
@@ -6096,10 +6123,11 @@
     });
   };
   window.__recetasAurosanaxDebug = function(){ return {version:'2.4 contexto de atención y médico reforzado', totalLocal: leerRecetasStorage().length, sheetsCargadas: recetasSheetsCargadas, sheetsCargando: recetasSheetsCargando, recetaEditandoId, recetaNuevaForzada, recetaGuardando, recetaAtencionActualId, pacienteActivo: obtenerPacienteActivoSeguro()?.nombre || '', codigoMedico: obtenerCodigoCortoMedico(), idMedico: obtenerIdMedicoReal(), storageKey: STORAGE_KEY}; };
+  window.__recetasIasynDebug = window.__recetasAurosanaxDebug;
 })();
 
 /* =====================================================
-   AUROSANAX RECETAS 1.9
+   IASYN RECETAS 1.9
    - Mantiene compatibilidad con recetas antiguas en texto
    - Guarda indicaciones/recomendaciones como arrays JSON sin duplicados
    - Lee arrays JSON para formulario, historial y PDF
@@ -6109,7 +6137,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.0 - CONTEXTO SEGURO
+   IASYN RECETAS 2.0 - CONTEXTO SEGURO
    - Limpia formulario al cambiar de consulta
    - No reutiliza medicamentos de otra atención
    - Bloquea guardado sin id_atencion
@@ -6118,7 +6146,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.1 - DIAGNÓSTICO ESTRUCTURADO
+   IASYN RECETAS 2.1 - DIAGNÓSTICO ESTRUCTURADO
    - Consulta listarDiagnosticosPorAtencion
    - Prioriza diagnóstico principal de la atención activa
    - Conserva código CIE-10 y descripción
@@ -6126,7 +6154,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.2 - DIAGNÓSTICO REAL
+   IASYN RECETAS 2.2 - DIAGNÓSTICO REAL
    - No acepta “Diagnóstico clínico” como descripción válida
    - No fabrica diagnósticos genéricos
    - Ver / Editar / PDF recuperan la descripción por id_atencion
@@ -6135,7 +6163,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.3 - MÉDICO DE LA ATENCIÓN
+   IASYN RECETAS 2.3 - MÉDICO DE LA ATENCIÓN
    - Lee id_medico directamente desde window.getAtencionActiva()
    - Consulta listarMedicosActivos para resolver nombre y registros
    - Sincroniza formulario, vista previa, PDF y guardado
@@ -6144,7 +6172,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.4 - CORRECCIÓN QUIRÚRGICA DUPLICIDAD
+   IASYN RECETAS 2.4 - CORRECCIÓN QUIRÚRGICA DUPLICIDAD
    - Reutiliza la receta activa de la misma id_atencion.
    - “Nueva receta” es la única acción que fuerza otra receta.
    - Conserva edición por id_receta, Plan → Receta, PDF e historial.
@@ -6152,14 +6180,14 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.5 - IMPRESIÓN TABULADA FASES 1 Y 2
+   IASYN RECETAS 2.5 - IMPRESIÓN TABULADA FASES 1 Y 2
    - Cambia únicamente la representación visual del tratamiento.
    - Columnas: medicamento, presentación/concentración, cantidad e indicaciones.
    - Conserva vista previa/PDF, JSON, Plan, guardado, historial y atención.
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.6 - FASES 3 Y 4
+   IASYN RECETAS 2.6 - FASES 3 Y 4
    - Vista administrativa: conserva Indicaciones para el paciente.
    - Vista paciente / imprimir: no renderiza ese bloque.
    - Mantiene la tabla institucional de medicamentos.
@@ -6167,7 +6195,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.7 - ORIGINAL / COPIA A4 FINAL
+   IASYN RECETAS 2.7 - ORIGINAL / COPIA A4 FINAL
    - Duplica únicamente la impresión para paciente.
    - Original arriba y copia abajo, en una sola hoja A4.
    - Corrige ancho, corte lateral, espacios y posición de firma.
@@ -6177,7 +6205,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.8 - VISTA PREVIA GRANDE
+   IASYN RECETAS 2.8 - VISTA PREVIA GRANDE
    - Vista paciente / imprimir abre primero una vista A4 ampliada.
    - La vista incluye únicamente Imprimir / Guardar PDF y Cerrar.
    - Ya no abre automáticamente el cuadro de impresión.
@@ -6187,7 +6215,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 2.9 - ZOOM COMPLETO EN VISTA PREVIA
+   IASYN RECETAS 2.9 - ZOOM COMPLETO EN VISTA PREVIA
    - Abre por defecto al 115 %.
    - Agrega controles internos para aumentar, disminuir y ajustar.
    - Mantiene disponible el zoom propio del navegador.
@@ -6197,7 +6225,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.0 - MOTOR PDF UNIFICADO
+   IASYN RECETAS 3.0 - MOTOR PDF UNIFICADO
    - El botón PDF de Plan y el botón PDF de Recetas usan el mismo motor.
    - Vista paciente, recetas emitidas e impresión reutilizan la plantilla A4.
    - Original arriba, Copia abajo y controles de zoom sin cambios.
@@ -6208,7 +6236,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.1 - SOLUCIÓN FINAL PDF DESDE PLAN
+   IASYN RECETAS 3.1 - SOLUCIÓN FINAL PDF DESDE PLAN
    - Corrige el caso real: impresion.js pasa obtenerDatosReceta() como
      recetaOpcional, aunque la receta todavía no tenga id_receta.
    - Si no existe id_receta y el Plan pertenece a la atención activa,
@@ -6222,7 +6250,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.2 - AJUSTE FINAL DE IMPRESIÓN
+   IASYN RECETAS 3.2 - AJUSTE FINAL DE IMPRESIÓN
    - Aumenta proporcionalmente la tipografía de Original y Copia.
    - Conserva jerarquías: títulos, encabezados, tabla, firma y pie.
    - Agrega separación central real para facilitar el corte de la hoja.
@@ -6234,7 +6262,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.3 - LETRA IMPRESA MÁS GRANDE
+   IASYN RECETAS 3.3 - LETRA IMPRESA MÁS GRANDE
    - Aumenta aproximadamente 2 a 3 puntos la tipografía de Original y Copia.
    - Conserva centrado, márgenes, tabla, firma, corte central y una sola hoja A4.
    - Ajusta mínimamente interlineado y rellenos para evitar desbordes.
@@ -6243,7 +6271,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.4 - CÉDULA + EDAD EN ENCABEZADO
+   IASYN RECETAS 3.4 - CÉDULA + EDAD EN ENCABEZADO
    - Muestra la cédula debajo del nombre del paciente sin cambiar
      la cuadrícula de 4 columnas ni los espacios del formato A4.
    - Muestra edad como "N años".
@@ -6253,7 +6281,7 @@
 ===================================================== */
 
 /* =====================================================
-   AUROSANAX RECETAS 3.5 DEFINITIVA - ENCABEZADO PROFESIONAL
+   IASYN RECETAS 3.5 DEFINITIVA - ENCABEZADO PROFESIONAL
    - Seis tarjetas independientes: Paciente, Cédula, Edad,
      Fecha de emisión, N.º de receta y Diagnóstico.
    - Se elimina la tarjeta CIE-10 del encabezado del paciente
