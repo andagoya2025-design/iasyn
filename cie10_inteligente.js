@@ -1,5 +1,5 @@
 /****************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP
  Archivo: cie10_inteligente.js
  Módulo: Inteligencia clínica asistida por CIE-10
  Versión corregida: 2026-07-07 alias cierre compatible
@@ -31,7 +31,20 @@
 (function(){
   'use strict';
 
-  const MODULO = 'AUROSANAX CIE10 INTELIGENTE';
+  const MODULO = 'IASYN CIE10 INTELIGENTE';
+
+  /*
+    IASYN - AISLAMIENTO / COMPATIBILIDAD INTERNA TEMPORAL
+    -----------------------------------------------------
+    Este módulo obtiene el backend exclusivamente desde API_URL definido
+    por el index de IASYN. No contiene URLs directas de Apps Script,
+    Drive, Sheets ni dominios AUROSANAX.
+
+    Los nombres `window.auroCie10*`, el evento `aurosanax:*` y el fallback
+    `MEDICAMENTOS_AUROSANAX_BASE` permanecen temporalmente porque son
+    contratos internos compartidos con Diagnóstico, Examen Físico y Plan.
+    No representan una conexión activa con AUROSANAX PRUEBA.
+  */
 
   const STATE = {
     ultimoCodigo: '',
@@ -103,7 +116,7 @@
 
   function obtenerContenedor(){
     /*
-      AUROSANAX FIX QUIRÚRGICO:
+      IASYN FIX QUIRÚRGICO:
       El protocolo inteligente CIE-10 debe existir únicamente dentro de la
       pestaña Diagnóstico, inmediatamente después del editor CIE-10 y antes
       del centro de integración clínica. Nunca se monta junto a Examen físico
@@ -538,7 +551,7 @@
   function mapaMedicamentosFallbackCie10(){
     /*
       Catálogo auxiliar mínimo para medicamentos que todavía no existen
-      en MEDICAMENTOS_AUROSANAX_BASE, pero que sí pueden venir desde
+      en MEDICAMENTOS_IASYN_BASE (o su alias heredado), pero que sí pueden venir desde
       protocolos clínicos. No reemplaza al catálogo principal del Plan.
     */
     return [
@@ -569,9 +582,11 @@
   }
 
   function obtenerCatalogoMedicamentosCie10(){
-    const basePlan = Array.isArray(window.MEDICAMENTOS_AUROSANAX_BASE)
-      ? window.MEDICAMENTOS_AUROSANAX_BASE
-      : [];
+    const basePlan = Array.isArray(window.MEDICAMENTOS_IASYN_BASE)
+      ? window.MEDICAMENTOS_IASYN_BASE
+      : (Array.isArray(window.MEDICAMENTOS_AUROSANAX_BASE)
+          ? window.MEDICAMENTOS_AUROSANAX_BASE
+          : []);
 
     return basePlan.concat(mapaMedicamentosFallbackCie10());
   }
@@ -871,7 +886,7 @@
   };
 
   /* =====================================================
-     COMPATIBILIDAD ERP AUROSANAX
+     COMPATIBILIDAD INTERNA IASYN
      Alias requerido por pruebas e integración:
      - Cerrar y Ocultar hacen exactamente lo mismo.
      - No modifica Examen Físico, Plan, Recetas ni Apps Script.
@@ -917,7 +932,7 @@
 
     try{
       /*
-        AUROSANAX FIX QUIRÚRGICO 2026-07-30:
+        IASYN FIX QUIRÚRGICO 2026-07-30:
         El botón oficial del CIE guarda primero el diagnóstico estructurado
         de la atención activa. Así Plan y Recetas consultan la misma fila
         persistida por id_atencion, sin restaurar interceptores globales ni
@@ -982,6 +997,14 @@
   window.auroCie10InteligenteEstado = function(){
     return JSON.parse(JSON.stringify(STATE));
   };
+
+  /* Alias IASYN sin romper las llamadas heredadas desde otros módulos. */
+  window.iasynCie10InteligenteBuscarProtocolo = window.auroCie10InteligenteBuscarProtocolo;
+  window.iasynCie10InteligenteOcultar = window.auroCie10InteligenteOcultar;
+  window.iasynCie10InteligenteCerrar = window.auroCie10InteligenteCerrar;
+  window.iasynCie10InteligenteCopiarResumen = window.auroCie10InteligenteCopiarResumen;
+  window.iasynCie10InteligenteAplicarAlPlan = window.auroCie10InteligenteAplicarAlPlan;
+  window.iasynCie10InteligenteEstado = window.auroCie10InteligenteEstado;
 
   console.info(MODULO + ': módulo cargado correctamente.');
 
