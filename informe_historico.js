@@ -1,5 +1,5 @@
 /* ============================================================================
-   AUROSANAX CLINICAL ERP
+   IASYN CLINICAL ERP
    Archivo de reemplazo propuesto: informe_historico.js
    Entrega externa: TXT completo para revisión manual
    Versión propuesta: 2.4.0-DEPURACION-DOCUMENTAL-ORDENADA-ANTIRREGRESIVO
@@ -67,12 +67,25 @@
   'use strict';
 
   if(window.auroInformeHistorico?.version){
-    console.warn('AUROSANAX INFORME HISTÓRICO: el módulo ya estaba cargado.');
+    console.warn('IASYN INFORME HISTÓRICO: el módulo ya estaba cargado.');
     return;
   }
 
   const VERSION = '2.4.0-DEPURACION-DOCUMENTAL-ORDENADA-ANTIRREGRESIVO';
-  const MODULO = 'AUROSANAX INFORME HISTÓRICO';
+  const MODULO = 'IASYN INFORME HISTÓRICO';
+
+  /*
+    IASYN - AISLAMIENTO / COMPATIBILIDAD INTERNA TEMPORAL
+    -----------------------------------------------------
+    Este módulo es SOLO LECTURA: realiza exclusivamente GET y no contiene
+    URLs directas de Apps Script, Google Drive, Google Sheets ni AUROSANAX.
+
+    API_URL sigue siendo la autoridad del index de IASYN. Los prefijos
+    históricos AUROSANAX_ANT_* se conservan porque identifican serializaciones
+    clínicas ya persistidas y no representan una conexión activa externa.
+    AUROSANAX_SEGURIDAD permanece únicamente como fallback temporal de
+    compatibilidad mientras la migración coordinada de Seguridad finaliza.
+  */
   const MAX_GET_CONCURRENCIA = 8;
 
   const INVALIDOS_BASE = new Set([
@@ -346,6 +359,8 @@
       window.API_URL ||
       window.APP_SCRIPT_URL ||
       document.getElementById('appsScriptUrl')?.value ||
+      window.IASYN_SEGURIDAD?.configuracion?.apiUrl ||
+      window.IASYN_SEGURIDAD?.config?.apiUrl ||
       window.AUROSANAX_SEGURIDAD?.configuracion?.apiUrl ||
       window.AUROSANAX_SEGURIDAD?.config?.apiUrl
     );
@@ -802,7 +817,7 @@
     c = c || {};
     if(c.datos && typeof c.datos === 'object') c = c.datos;
 
-    const nombreComercial = txt(c.nombre_comercial || c.nombre_clinica || c.nombre_centro) || 'AUROSANAX';
+    const nombreComercial = txt(c.nombre_comercial || c.nombre_clinica || c.nombre_centro) || 'IASYN';
     const profesional = txt(
       c.nombre_profesional || c.profesional_responsable || c.titular_profesional || c.medico_responsable
     );
@@ -2262,6 +2277,9 @@
       };
     }
   });
+
+  /* Alias IASYN aditivo; se conserva window.auroInformeHistorico por compatibilidad. */
+  window.iasynInformeHistorico = window.auroInformeHistorico;
 
   console.info(`${MODULO} v${VERSION}: cargado en modo SOLO LECTURA / GOLD STANDARD.`);
 })();
