@@ -1,12 +1,12 @@
 /*
-  AUROSANAX ERP - ANTECEDENTES FASE 1
+  IASYN ERP - ANTECEDENTES FASE 1
   Cambio quirúrgico: añade Citología/PAP y estado de Colposcopia
   dentro del JSON ginecológico ya existente.
   No crea columnas, no toca Apps Script ni otros módulos.
 */
 
 /*
-  AUROSANAX ERP - MODULO ANTECEDENTES
+  IASYN ERP - MODULO ANTECEDENTES
   Archivo modular extraído desde index.html SIN CORREGIR.
   Objetivo: iniciar modularización no destructiva del módulo Antecedentes.
   Mantiene funciones, nombres e IDs existentes.
@@ -559,7 +559,7 @@ function auroLimpiarTituloClinico(txt){
 
 
 
-/* AUROSANAX FIX HTA - extrae patológicos desde texto compacto o JSON modular */
+/* IASYN FIX HTA - extrae patológicos desde texto compacto o JSON modular */
 function auroExtraerFuentePatologicosPersonales(valor){
   const texto = String(valor || '').trim();
   if(!texto) return '';
@@ -571,7 +571,7 @@ function auroExtraerFuentePatologicosPersonales(valor){
       if(Array.isArray(data?.patologicos)) return data.patologicos.map(auroPrevioTextoItemBasico).filter(Boolean).join('; ');
     }
   }catch(e){
-    console.warn('AUROSANAX: no se pudo leer patológicos personales desde JSON.', e);
+    console.warn('IASYN: no se pudo leer patológicos personales desde JSON.', e);
   }
 
   return texto;
@@ -1273,10 +1273,17 @@ function cargarAlergiasEstructuradas(valor){
 
 
 /* ==========================================================
-   AUROSANAX - CONEXIÓN COMPLETA MÓDULO ANTECEDENTES
+   IASYN - CONEXIÓN COMPLETA MÓDULO ANTECEDENTES
    No destructivo: usa columnas existentes de historias_clinicas.
    ========================================================== */
 
+/*
+  COMPATIBILIDAD DE DATOS HISTÓRICOS IASYN:
+  Los valores literales AUROSANAX_ANT_* se conservan únicamente como marcadores
+  de serialización para leer y actualizar historias ya existentes en IASYN.
+  No son URLs, endpoints, IDs de Google Sheets/Drive ni conexiones a AUROSANAX PRUEBA.
+  No renombrarlos hasta migrar conjuntamente el comparador del index y los datos históricos.
+*/
 const AURO_ANT_PERSONALES_MARKER = 'AUROSANAX_ANT_PERSONALES_V1::';
 const AURO_ANT_GINECO_OBS_MARKER = 'AUROSANAX_ANT_GINECO_OBS_V1::';
 
@@ -1344,7 +1351,7 @@ function auroParsear(marker, valor){
   try{
     return JSON.parse(texto.substring(marker.length));
   }catch(error){
-    console.warn('No se pudo parsear antecedente AUROSANAX:', error);
+    console.warn('No se pudo parsear antecedente IASYN:', error);
     return null;
   }
 }
@@ -1724,7 +1731,7 @@ function actualizarResumenAntecedentesCompletos(){
 
 
 /* ==========================================================
-   AUROSANAX - ANTECEDENTES v2.1
+   IASYN - ANTECEDENTES v2.1
    Ayudas clínicas de llenado rápido sin cambiar estructura.
    No modifica Code.gs ni columnas. Todo sigue guardando en
    las columnas existentes de historias_clinicas.
@@ -2562,7 +2569,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================
-   AUROSANAX FIX DEFINITIVO - COVID Y VACUNAS EN CAJA RESUMEN
+   IASYN FIX DEFINITIVO - COVID Y VACUNAS EN CAJA RESUMEN
    Corrección no destructiva: reemplaza solo funciones de resumen
    y recopila vacunas solo si tienen datos reales.
    ========================================================== */
@@ -2760,9 +2767,9 @@ function auroMostrarAntecedentesPrevios(h, modo){
   box.style.display = content.innerHTML.trim() ? 'block' : 'none';
 }
 
-console.log('AUROSANAX antecedentes.js: FIX COVID/VACUNAS resumen cargado');
+console.log('IASYN antecedentes.js: FIX COVID/VACUNAS resumen cargado');
 /* ==========================================================
-   AUROSANAX FIX FINAL PROFESIONAL - FILTRO REAL DE RESUMEN
+   IASYN FIX FINAL PROFESIONAL - FILTRO REAL DE RESUMEN
    Objetivo: no mostrar tarjetas vacías ni valores incompletos.
    Corrige hábitos, actividad física, alimentación, obstétricos y ginecológicos.
    No modifica backend, Google Sheets, Apps Script ni index.html.
@@ -3058,11 +3065,11 @@ function auroMostrarAntecedentesPrevios(h, modo){
   box.style.display = content.innerHTML.trim() ? 'block' : 'none';
 }
 
-console.log('AUROSANAX antecedentes.js: FIX FINAL grupos vacíos + campos incompletos cargado');
+console.log('IASYN antecedentes.js: FIX FINAL grupos vacíos + campos incompletos cargado');
 
 
 /* ==========================================================
-   AUROSANAX UI PREMIUM FINAL - TARJETAS RESUMEN ANTECEDENTES
+   IASYN UI PREMIUM FINAL - TARJETAS RESUMEN ANTECEDENTES
    Solo cambia diseño visual de la caja resumen.
    No modifica guardado, lectura, Google Sheets, Apps Script ni index.html.
    ========================================================== */
@@ -3388,9 +3395,9 @@ function auroRenderPrevioItemsPremium(label, items){
   `;
 }
 
-console.log('AUROSANAX antecedentes.js: UI PREMIUM tarjetas limpias cargado');
+console.log('IASYN antecedentes.js: UI PREMIUM tarjetas limpias cargado');
 /* ==========================================================
-   AUROSANAX ANTECEDENTES - RESPONSIVE PREMIUM MÓVIL v1.1
+   IASYN ANTECEDENTES - RESPONSIVE PREMIUM MÓVIL v1.1
    Alcance EXCLUSIVO: teléfonos (hasta 760 px).
    - No cambia escritorio.
    - No cambia IDs, nombres, data-attributes ni funciones clínicas.
@@ -4191,9 +4198,9 @@ if(document.readyState === 'loading'){
   setTimeout(auroAntecedentesMobileInicializar, 420);
 }
 
-console.log('AUROSANAX antecedentes.js: RESPONSIVE PREMIUM MÓVIL v1.2 + VACUNAS ETIQUETADAS cargado');
+console.log('IASYN antecedentes.js: RESPONSIVE PREMIUM MÓVIL v1.2 + VACUNAS ETIQUETADAS cargado');
 /* ============================================================
-   AUROSANAX FIX QUIRÚRGICO - NO GUARDAR ANTECEDENTES VACÍOS
+   IASYN FIX QUIRÚRGICO - NO GUARDAR ANTECEDENTES VACÍOS
    Alcance exclusivo:
    - Solo modifica el valor devuelto por
      recopilarAntecedentesPersonalesCompletos().
@@ -4260,7 +4267,7 @@ function recopilarAntecedentesPersonalesCompletos(){
 }
 
 /* ============================================================
-   AUROSANAX - ANTECEDENTES FAMILIARES ESTRUCTURADOS V1
+   IASYN - ANTECEDENTES FAMILIARES ESTRUCTURADOS V1
    Alcance quirúrgico:
    - Conecta únicamente los controles familiares creados en Index 42.
    - Usa la columna existente antecedentes_familiares.
@@ -4729,11 +4736,11 @@ function recopilarAntecedentesPersonalesCompletos(){
   }
 
   console.log(
-    'AUROSANAX antecedentes.js: familiares estructurados V1 conectados sin cambios de backend.'
+    'IASYN antecedentes.js: familiares estructurados V1 conectados sin cambios de backend.'
   );
 })();
 /* ============================================================
-   AUROSANAX - GINECOLÓGICOS REPETIBLES V1
+   IASYN - GINECOLÓGICOS REPETIBLES V1
    Alcance EXCLUSIVO:
    - Permite múltiples Citologías / PAP, Colposcopias y Biopsias.
    - Conserva íntegros los IDs y campos originales de la primera fila.
@@ -5143,11 +5150,11 @@ function recopilarAntecedentesPersonalesCompletos(){
   }
 
   console.log(
-    'AUROSANAX antecedentes.js: GINECOLÓGICOS REPETIBLES V1 cargado sin cambios de backend.'
+    'IASYN antecedentes.js: GINECOLÓGICOS REPETIBLES V1 cargado sin cambios de backend.'
   );
 })();
 /* ============================================================
-   AUROSANAX - AISLAMIENTO DE ANTECEDENTES ENTRE PACIENTES V1
+   IASYN - AISLAMIENTO DE ANTECEDENTES ENTRE PACIENTES V1
    Corrección quirúrgica antirregresiva.
    ------------------------------------------------------------
    PROBLEMA RESUELTO:
@@ -5301,7 +5308,7 @@ function recopilarAntecedentesPersonalesCompletos(){
         window.auroV21SincronizarEstadosAyudas();
       }catch(error){
         console.warn(
-          'AUROSANAX Antecedentes: no se pudo sincronizar el estado visual de ayudas tras limpiar paciente.',
+          'IASYN Antecedentes: no se pudo sincronizar el estado visual de ayudas tras limpiar paciente.',
           error
         );
       }
@@ -5345,7 +5352,7 @@ function recopilarAntecedentesPersonalesCompletos(){
     limpiarAntecedentesVisualesPaciente_();
 
     console.log(
-      'AUROSANAX Antecedentes: contexto visual limpiado por cambio de paciente.',
+      'IASYN Antecedentes: contexto visual limpiado por cambio de paciente.',
       { anterior, nuevo }
     );
   }
@@ -5393,11 +5400,11 @@ function recopilarAntecedentesPersonalesCompletos(){
     limpiarAntecedentesVisualesPaciente_;
 
   console.log(
-    'AUROSANAX antecedentes.js: AISLAMIENTO DE ANTECEDENTES ENTRE PACIENTES V1 cargado.'
+    'IASYN antecedentes.js: AISLAMIENTO DE ANTECEDENTES ENTRE PACIENTES V1 cargado.'
   );
 })();
 /* ============================================================
-   AUROSANAX - ANTECEDENTES: BARRERA SIN CAMBIOS REALES V2
+   IASYN - ANTECEDENTES: BARRERA SIN CAMBIOS REALES V2
    Base: antecedentes estable entregado por el usuario.
    ------------------------------------------------------------
    OBJETIVO EXCLUSIVO:
@@ -5556,7 +5563,7 @@ function recopilarAntecedentesPersonalesCompletos(){
               ? getValueIfExists('hcAntecedentesPersonales')
               : '');
     }catch(error){
-      console.warn('AUROSANAX Antecedentes: no se pudo capturar personales.', error);
+      console.warn('IASYN Antecedentes: no se pudo capturar personales.', error);
     }
 
     try{
@@ -5567,7 +5574,7 @@ function recopilarAntecedentesPersonalesCompletos(){
               ? getValueIfExists('hcAntecedentesQuirurgicos')
               : '');
     }catch(error){
-      console.warn('AUROSANAX Antecedentes: no se pudo capturar quirúrgicos.', error);
+      console.warn('IASYN Antecedentes: no se pudo capturar quirúrgicos.', error);
     }
 
     try{
@@ -5578,7 +5585,7 @@ function recopilarAntecedentesPersonalesCompletos(){
               ? getValueIfExists('hcRevisionSistemas')
               : '');
     }catch(error){
-      console.warn('AUROSANAX Antecedentes: no se pudo capturar gineco-obstétricos.', error);
+      console.warn('IASYN Antecedentes: no se pudo capturar gineco-obstétricos.', error);
     }
 
     try{
@@ -5589,7 +5596,7 @@ function recopilarAntecedentesPersonalesCompletos(){
               ? getValueIfExists('hcAntecedentesFamiliares')
               : '');
     }catch(error){
-      console.warn('AUROSANAX Antecedentes: no se pudo capturar familiares.', error);
+      console.warn('IASYN Antecedentes: no se pudo capturar familiares.', error);
     }
 
     try{
@@ -5607,7 +5614,7 @@ function recopilarAntecedentesPersonalesCompletos(){
               ? getValueIfExists('hcAlergias')
               : '');
     }catch(error){
-      console.warn('AUROSANAX Antecedentes: no se pudo capturar alergias.', error);
+      console.warn('IASYN Antecedentes: no se pudo capturar alergias.', error);
     }
 
     return estado;
@@ -5744,7 +5751,7 @@ function recopilarAntecedentesPersonalesCompletos(){
         capturarBaseline_(h);
       }catch(error){
         console.warn(
-          'AUROSANAX Antecedentes: no se pudo capturar línea base de edición.',
+          'IASYN Antecedentes: no se pudo capturar línea base de edición.',
           error
         );
       }
@@ -5781,12 +5788,12 @@ function recopilarAntecedentesPersonalesCompletos(){
   };
 
   console.log(
-    'AUROSANAX antecedentes.js: BARRERA SIN CAMBIOS REALES V2 instalada.'
+    'IASYN antecedentes.js: BARRERA SIN CAMBIOS REALES V2 instalada.'
   );
 })();
 
 /* ============================================================
-   AUROSANAX - ANTECEDENTES: BARRERA DE MODIFICACIÓN REAL V3
+   IASYN - ANTECEDENTES: BARRERA DE MODIFICACIÓN REAL V3
    Corrección quirúrgica anti-escritura sin interacción del usuario.
    ------------------------------------------------------------
    OBJETIVO EXCLUSIVO:
@@ -6028,7 +6035,7 @@ function recopilarAntecedentesPersonalesCompletos(){
     }
 
     console.info(
-      'AUROSANAX Antecedentes: guardado omitido por ausencia de modificaciones reales.'
+      'IASYN Antecedentes: guardado omitido por ausencia de modificaciones reales.'
     );
   }
 
@@ -6158,6 +6165,6 @@ function recopilarAntecedentesPersonalesCompletos(){
   };
 
   console.log(
-    'AUROSANAX antecedentes.js: BARRERA DE MODIFICACIÓN REAL V3 instalada.'
+    'IASYN antecedentes.js: BARRERA DE MODIFICACIÓN REAL V3 instalada.'
   );
 })();
