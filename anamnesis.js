@@ -1,5 +1,5 @@
 /*
-AUROSANAX ERP - MOTOR DINÁMICO DE ANAMNESIS SINDRÓMICA
+IASYN ERP - MOTOR DINÁMICO DE ANAMNESIS SINDRÓMICA
 Archivo: anamnesis.js
 Versión: 3.6.3
 
@@ -34,14 +34,14 @@ Función:
     guardadosRemotosEnCurso: {},
     guardadosRemotosPendientes: {},
     /*
-      AUROSANAX 3.6.15 - protección quirúrgica contra guardados fantasma.
+      IASYN 3.6.15 - protección quirúrgica contra guardados fantasma.
       Solo una edición clínica real marca una atención como pendiente.
       Abrir, cargar, visualizar o sincronizar la cabecera NO debe marcarla.
     */
     cambiosUsuarioPorAtencion: {},
 
     /*
-      AUROSANAX 3.6.16 - CONTEXTO TRANSACCIONAL ESTRICTO
+      IASYN 3.6.16 - CONTEXTO TRANSACCIONAL ESTRICTO
       --------------------------------------------------
       contextoEpoch:
         cambia en cada transición real de atención y vuelve obsoletos
@@ -67,7 +67,7 @@ Función:
     firmaPersistidaPorAtencion: {},
 
     /*
-      AUROSANAX 3.6.18-R1 - CAPA RÁPIDA NO AUTORITATIVA
+      IASYN 3.6.18-R1 - CAPA RÁPIDA NO AUTORITATIVA
       -------------------------------------------------
       firmaRemotaEnCursoPorAtencion evita duplicar el mismo POST cuando
       autosave y botón coinciden sobre exactamente la misma firma clínica.
@@ -129,7 +129,7 @@ Función:
     try {
       return JSON.parse(valor);
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: JSON inválido.', error);
+      console.warn('IASYN Anamnesis: JSON inválido.', error);
       return defecto;
     }
   }
@@ -157,7 +157,7 @@ Función:
     return texto(
       window.API_URL ||
       window.APP_SCRIPT_URL ||
-      localStorage.getItem('AUROSANAX_API_URL')
+      localStorage.getItem('IASYN_API_URL')
     );
   }
 
@@ -267,7 +267,7 @@ Función:
   }
 
   /* ============================================================
-     AUROSANAX ANAMNESIS v3.6.8
+     IASYN ANAMNESIS v3.6.8
      CABECERA SINCRONIZADA CON LA ATENCIÓN ACTIVA
      ------------------------------------------------------------
      Fecha, médico, especialidad y tipo se visualizan desde el
@@ -347,7 +347,7 @@ Función:
     ];
 
     /*
-      AUROSANAX 3.6.9 - CONTEXTO CENTRAL DE ATENCIÓN
+      IASYN 3.6.9 - CONTEXTO CENTRAL DE ATENCIÓN
       Prioriza el contexto maestro enriquecido de atenciones.js.
       Se conservan las fuentes anteriores únicamente como compatibilidad.
     */
@@ -358,7 +358,7 @@ Función:
         objetos.unshift(window.obtenerContextoAtencionActual());
       }
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: no se pudo leer el contexto central de la atención.', error);
+      console.warn('IASYN Anamnesis: no se pudo leer el contexto central de la atención.', error);
     }
 
     try {
@@ -368,7 +368,7 @@ Función:
         objetos.push(window.getAtencionActiva());
       }
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: no se pudo leer la atención activa.', error);
+      console.warn('IASYN Anamnesis: no se pudo leer la atención activa.', error);
     }
 
     return objetos.filter(Boolean);
@@ -416,7 +416,7 @@ Función:
   }
 
   /*
-    AUROSANAX 3.6.11 - CABECERA CLÍNICA SEGURA
+    IASYN 3.6.11 - CABECERA CLÍNICA SEGURA
     Fecha, médico y especialidad permanecen sincronizados y bloqueados.
     Únicamente el tipo de atención es editable mediante catálogo controlado.
   */
@@ -586,7 +586,7 @@ Función:
   }
 
   /*
-    AUROSANAX 3.6.7 - EQUIVALENCIAS CLÍNICAS GLOBALES
+    IASYN 3.6.7 - EQUIVALENCIAS CLÍNICAS GLOBALES
     -------------------------------------------------
     Capa compacta para reconocer expresiones frecuentes sin llenar el código
     con diagnósticos ni duplicar todas las palabras_clave de las plantillas.
@@ -639,7 +639,7 @@ Función:
     if (!consulta) return 0;
 
     /*
-      AUROSANAX 3.6.6 - MOTOR GLOBAL DE SELECCIÓN DE PLANTILLAS
+      IASYN 3.6.6 - MOTOR GLOBAL DE SELECCIÓN DE PLANTILLAS
       Intervención quirúrgica limitada al reconocimiento del motivo.
       No modifica formularios, redacción clínica, guardado ni restauración.
     */
@@ -1708,10 +1708,10 @@ Función:
     if (valores.evolucion) cronologia.push(`curso ${valores.evolucion.toLowerCase()}`);
     if (cronologia.length) partes.push(`Cuadro de ${unirNatural(cronologia)}.`);
 
-    /* AUROSANAX 3.6.3: pulido final del motor narrativo, sin alterar guardado, navegación ni vínculos. */
+    /* IASYN 3.6.3: pulido final del motor narrativo, sin alterar guardado, navegación ni vínculos. */
     const dolor = [];
     if (valores.localizacion) dolor.push(`localizado en ${valores.localizacion.toLowerCase()}`);
-    /* AUROSANAX 3.6.5: evita generar intensidad undefined/10 en plantillas sin campo de dolor. */
+    /* IASYN 3.6.5: evita generar intensidad undefined/10 en plantillas sin campo de dolor. */
     const intensidadDolor = texto(valores.intensidad_0_10);
     if (intensidadDolor !== '') {
       const n = Number(intensidadDolor);
@@ -1859,7 +1859,7 @@ Función:
   }
 
   /* ============================================================
-     AUROSANAX 3.6.14 - SÍNTOMAS COMPLEMENTARIOS DE ANAMNESIS
+     IASYN 3.6.14 - SÍNTOMAS COMPLEMENTARIOS DE ANAMNESIS
      Intervención localizada:
      - Convierte los controles ginSint* y obsSint* en narrativa clínica.
      - No cambia sus IDs, almacenamiento ni relación por id_atencion.
@@ -2046,7 +2046,7 @@ Función:
       try {
         respuesta = await consultarAccion('listarPlantillasAnamnesisActivas');
       } catch (errorActivas) {
-        console.warn('AUROSANAX Anamnesis: listado activo no disponible.', errorActivas);
+        console.warn('IASYN Anamnesis: listado activo no disponible.', errorActivas);
         respuesta = await consultarAccion('listarPlantillasAnamnesis');
       }
 
@@ -2071,7 +2071,7 @@ Función:
       );
 
       detectar();
-      console.info(`AUROSANAX Anamnesis v${VERSION}: ${plantillas.length} plantillas cargadas.`);
+      console.info(`IASYN Anamnesis v${VERSION}: ${plantillas.length} plantillas cargadas.`);
     } catch (error) {
       state.cargado = false;
       state.plantillas = [];
@@ -2090,7 +2090,7 @@ Función:
         'No se pudo cargar plantillas_anamnesis. Revise la publicación de Apps Script y vuelva a actualizar.',
         'warn'
       );
-      console.error('AUROSANAX Anamnesis: error al cargar plantillas.', error);
+      console.error('IASYN Anamnesis: error al cargar plantillas.', error);
     } finally {
       state.cargando = false;
     }
@@ -2098,7 +2098,7 @@ Función:
 
 
   /* ============================================================
-     AUROSANAX ANAMNESIS v3.6.0
+     IASYN ANAMNESIS v3.6.0
      CONEXIÓN QUIRÚRGICA POR id_atencion
      ------------------------------------------------------------
      Este bloque agrega aislamiento, guardado y restauración por
@@ -2112,7 +2112,7 @@ Función:
      - botones, diseño o funcionamiento clínico ya existente.
   ============================================================ */
 
-  const AURO_ANAMNESIS_STORAGE_KEY = 'aurosanax_anamnesis_por_atencion_v1';
+  const AURO_ANAMNESIS_STORAGE_KEY = 'iasyn_anamnesis_por_atencion_v1';
 
   function auroClonarAnamnesis(valor) {
     try {
@@ -2128,7 +2128,7 @@ Función:
       const data = raw ? JSON.parse(raw) : {};
       return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: no se pudo leer el respaldo local.', error);
+      console.warn('IASYN Anamnesis: no se pudo leer el respaldo local.', error);
       return {};
     }
   }
@@ -2140,7 +2140,7 @@ Función:
         JSON.stringify(cache && typeof cache === 'object' ? cache : {})
       );
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: no se pudo guardar el respaldo local.', error);
+      console.warn('IASYN Anamnesis: no se pudo guardar el respaldo local.', error);
     }
   }
 
@@ -2154,7 +2154,7 @@ Función:
         contexto = window.obtenerContextoAtencionActual();
       }
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: no se pudo leer el contexto maestro.', error);
+      console.warn('IASYN Anamnesis: no se pudo leer el contexto maestro.', error);
     }
 
     if (!contexto || typeof contexto !== 'object') {
@@ -2165,7 +2165,7 @@ Función:
           contexto = window.obtenerAtencionActiva();
         }
       } catch (error) {
-        console.warn('AUROSANAX Anamnesis: no se pudo leer la atención activa.', error);
+        console.warn('IASYN Anamnesis: no se pudo leer la atención activa.', error);
       }
     }
 
@@ -2253,7 +2253,7 @@ Función:
 
 
   /* ============================================================
-     AUROSANAX ANAMNESIS v3.6.12
+     IASYN ANAMNESIS v3.6.12
      REVALIDACIÓN NO BLOQUEANTE DE LA ATENCIÓN ACTIVA
      ------------------------------------------------------------
      - Solo exige id_atencion para guardar por consulta.
@@ -2346,7 +2346,7 @@ Función:
     const salida = {};
 
     /*
-      AUROSANAX FIX QUIRÚRGICO - CONTROLES_JSON COMPACTO
+      IASYN FIX QUIRÚRGICO - CONTROLES_JSON COMPACTO
       --------------------------------------------------
       Objetivo:
       - Mantener una sola fila por id_atencion.
@@ -2451,14 +2451,14 @@ Función:
       const tipo = texto(item.tipo).toLowerCase();
 
       /*
-        AUROSANAX 3.6.10:
+        IASYN 3.6.10:
         La cabecera editable (especialidad y tipo) se conserva por atención,
         pero no constituye contenido clínico para Diagnóstico o Integración.
       */
       if (item.cabecera_contexto === true) return false;
 
       /*
-        CORRECCIÓN QUIRÚRGICA AUROSANAX:
+        CORRECCIÓN QUIRÚRGICA IASYN:
         Los checkbox y radio desmarcados conservan el valor técnico "on".
         Ese valor no representa información clínica y no debe provocar
         el guardado o restauración de una anamnesis vacía.
@@ -2598,7 +2598,7 @@ Función:
 
       return { success: true };
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: respaldo remoto no disponible.', error);
+      console.warn('IASYN Anamnesis: respaldo remoto no disponible.', error);
       return { success: false, error };
     }
   }
@@ -2688,7 +2688,7 @@ Función:
 
       /* Un cambio clínico real = un POST. La confirmación posterior solo lee. */
       /*
-        AUROSANAX 3.6.18-R2 - SEÑAL VISUAL, SIN PERSISTENCIA
+        IASYN 3.6.18-R2 - SEÑAL VISUAL, SIN PERSISTENCIA
         ---------------------------------------------------
         Informa al INDEX que YA comenzó el guardado real de esta firma.
         No escribe, no lee, no altera la cola, no modifica timestamps y
@@ -2910,7 +2910,7 @@ Función:
         data,
         { mostrarEstado: false, token }
       ).catch(error => {
-        console.warn('AUROSANAX Anamnesis: sincronización remota pendiente.', error);
+        console.warn('IASYN Anamnesis: sincronización remota pendiente.', error);
       });
     }
 
@@ -2942,7 +2942,7 @@ Función:
         controles_json: parsearJsonSeguro(registro.controles_json, {})
       };
     } catch (error) {
-      console.warn('AUROSANAX Anamnesis: se usará respaldo local.', error);
+      console.warn('IASYN Anamnesis: se usará respaldo local.', error);
       return null;
     }
   }
@@ -3224,6 +3224,14 @@ Función:
     }, 700);
   }
 
+  /*
+    COMPATIBILIDAD TEMPORAL IASYN:
+    Los eventos literales "aurosanax:*" se conservan como contrato interno entre
+    módulos ya existentes. No son URLs, endpoints, IDs ni conexiones con
+    AUROSANAX PRUEBA. No deben renombrarse aisladamente hasta migrar también
+    todos sus emisores y receptores.
+  */
+
   function auroInstalarSincronizacionAtencion() {
     if (window.__auroAnamnesisEventosAtencionInstalados) return;
     window.__auroAnamnesisEventosAtencionInstalados = true;
@@ -3232,7 +3240,7 @@ Función:
       const detalle = evento?.detail || {};
       cambiarAnamnesisPorAtencion(detalle.id_atencion, detalle)
         .catch(error => {
-          console.error('AUROSANAX Anamnesis: error al cambiar de atención.', error);
+          console.error('IASYN Anamnesis: error al cambiar de atención.', error);
         });
     };
 
@@ -3329,7 +3337,7 @@ Función:
     auroSincronizarCabeceraAtencion();
     cargarPlantillas(false);
 
-    console.info(`AUROSANAX Anamnesis v${VERSION}: inicializado.`);
+    console.info(`IASYN Anamnesis v${VERSION}: inicializado.`);
     return true;
   }
 
