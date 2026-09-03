@@ -1,5 +1,5 @@
 /***********************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP
  Archivo: recomendaciones.js
  Módulo: Recomendaciones clínicas por atención
  Versión: 1.1.0
@@ -21,13 +21,23 @@
   'use strict';
 
   if(window.auroRecomendaciones && window.auroRecomendaciones.version){
-    console.warn('AUROSANAX RECOMENDACIONES: módulo ya cargado.');
+    console.warn('IASYN RECOMENDACIONES: módulo ya cargado.');
     return;
   }
 
-  const MODULO = 'AUROSANAX RECOMENDACIONES';
+  const MODULO = 'IASYN RECOMENDACIONES';
   const VERSION = '1.1.0';
-  const JSON_VERSION = 'AUROSANAX_RECOMENDACIONES_JSON_V1';
+  const JSON_VERSION = 'IASYN_RECOMENDACIONES_JSON_V1';
+
+  /*
+    IASYN - COMPATIBILIDAD INTERNA TEMPORAL
+    ---------------------------------------
+    Los eventos `aurosanax:*`, algunas claves localStorage `aurosanax_*`
+    y objetos `window.auro*` que permanecen en este archivo son contratos
+    internos heredados compartidos con Atenciones, Diagnóstico, Plan e index.
+    No representan una conexión directa con AUROSANAX PRUEBA.
+    Su migración debe hacerse coordinadamente para evitar regresiones.
+  */
 
   const state = {
     idAtencion: '',
@@ -187,7 +197,7 @@
     if(!id) return {id:'', atencion:{}, editable:false, historica:false, cerrada:false};
 
     /*
-      AUROSANAX FIX QUIRÚRGICO 2026-08-12:
+      IASYN FIX QUIRÚRGICO 2026-08-12:
       La autoridad clínica es la atención seleccionada/activa del ERP.
       localStorage se usa únicamente como respaldo descriptivo y NUNCA
       para decidir que una atención abierta es histórica solo porque
@@ -210,7 +220,7 @@
     );
 
     /*
-      AUROSANAX RECOMENDACIONES 2026-08-12:
+      IASYN RECOMENDACIONES 2026-08-12:
       El cierre clínico de la atención NO equivale al cierre documental
       de Recomendaciones. Una atención finalizada/cerrada/completada
       puede todavía requerir emisión o corrección de recomendaciones.
@@ -924,7 +934,7 @@
 
 
   /* ============================================================
-     AUROSANAX RECOMENDACIONES 1.1.0
+     IASYN RECOMENDACIONES 1.1.0
      IMPRESIÓN A4 BASADA EN EL DOCUMENTO MAESTRO DE CERTIFICADOS
      ----------------------------------------------------------------
      ALCANCE QUIRÚRGICO / ANTIRREGRESIÓN
@@ -948,7 +958,7 @@
     if(c.datos&&typeof c.datos==='object') c=c.datos;
 
     return {
-      nombre:primerTexto(c.nombre_clinica,c.nombre_centro,c.nombre_comercial,c.razon_social,'AurosanaxMedic'),
+      nombre:primerTexto(c.nombre_clinica,c.nombre_centro,c.nombre_comercial,c.razon_social,'IASYN'),
       subtitulo:primerTexto(c.subtitulo_clinica,c.descripcion_clinica,c.eslogan_clinica,'Ginecología y Obstetricia'),
       razon_social:txt(c.razon_social),
       ruc:txt(c.ruc),
@@ -1235,7 +1245,7 @@ body{overflow-x:hidden}
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recomendaciones médicas AUROSANAX</title>
+<title>Recomendaciones médicas IASYN</title>
 <style>
 ${recEstilosImpresion()}
 html,body{background:#dfe3e8}
@@ -1345,4 +1355,7 @@ html,body{background:#dfe3e8}
     vistaPrevia:vistaPrevia,
     estado:state
   };
+
+  /* Alias propio IASYN sin romper consumidores heredados de window.auroRecomendaciones. */
+  window.iasynRecomendaciones = window.auroRecomendaciones;
 })();
