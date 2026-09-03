@@ -1,5 +1,5 @@
 /***********************************************************************
- AUROSANAX ERP DEMO
+ IASYN ERP
  Archivo: certificado.js
  Módulo: Certificados médicos por atención
  Versión: 1.3.3 - documento maestro A4 + visor móvil escalado antirregresión
@@ -22,7 +22,17 @@
 if(window.auroCertificados?.version) return;
 
 const VERSION='1.3.8';
-const JSON_VERSION='AUROSANAX_CERTIFICADO_JSON_V2';
+const JSON_VERSION='IASYN_CERTIFICADO_JSON_V2';
+
+/*
+ IASYN - AISLAMIENTO / COMPATIBILIDAD INTERNA
+ --------------------------------------------
+ El backend se obtiene únicamente desde API_URL definido por el index de IASYN.
+ Este archivo no contiene URLs directas de Apps Script, Drive, Sheets ni
+ dominios AUROSANAX. Los nombres window.auro*, IDs DOM auro* y variables
+ internas auro* se conservan como contrato técnico heredado para no romper
+ index ni otros módulos; no representan conexión activa con AUROSANAX PRUEBA.
+*/
 
 const state={
   idAtencion:'',
@@ -271,7 +281,7 @@ function normalizarConfig(c){
   c=c||{};
   if(c.datos&&typeof c.datos==='object') c=c.datos;
   return {
-    nombre:txt(c.nombre_clinica||c.nombre_centro||c.nombre_comercial||c.razon_social)||'AUROSANAX',
+    nombre:txt(c.nombre_clinica||c.nombre_centro||c.nombre_comercial||c.razon_social)||'IASYN',
     subtitulo:txt(c.subtitulo_clinica||c.descripcion_clinica||c.eslogan_clinica),
     razon_social:txt(c.razon_social),
     ruc:txt(c.ruc),
@@ -855,7 +865,7 @@ function docHTML(data){
     d.centro||{}
   );
 
-  const centro=txt(cfg.nombre)||'AUROSANAX';
+  const centro=txt(cfg.nombre)||'IASYN';
   const color=txt(cfg.colorPrincipal)||'#8b1e5a';
   const ciudad=txt(cfg.ciudad)||'Guayaquil';
   const tipo=txt(data.tipo_certificado||d.tipo_certificado||'Certificado médico').toUpperCase();
@@ -1069,7 +1079,7 @@ function auroGenerarVistaImpresionCertificadoUnificada(dataOpcional){
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vista previa de certificado médico AUROSANAX</title>
+<title>Vista previa de certificado médico IASYN</title>
 <style>
 ${estilosImpresion()}
 html,body{background:#dfe3e8}
@@ -1240,6 +1250,9 @@ window.auroCertificados={
   obtenerDatos:datos,
   construirDocumento:docHTML
 };
+
+/* Alias IASYN aditivo; conserva window.auroCertificados por compatibilidad. */
+window.iasynCertificados=window.auroCertificados;
 
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',()=>{mount();},{once:true});
