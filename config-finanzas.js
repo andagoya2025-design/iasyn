@@ -1,5 +1,13 @@
+/*
+ IASYN - AISLAMIENTO CONFIGURACIÓN FINANCIERA
+ - No contiene URLs, Spreadsheet IDs ni Drive IDs directos.
+ - Conserva las acciones financieras del backend y los IDs HTML existentes.
+ - No modifica datos clínicos ni el catálogo clínico de médicos.
+ - No guarda automáticamente por inicialización; las escrituras continúan
+   dependiendo de acciones explícitas del usuario.
+*/
 /* ==========================================================
-   IASYN ERP DEMO - CONFIG FINANZAS JS
+   IASYN ERP - CONFIG FINANZAS JS
    Versión: 2026-08-11 / 06 CIERRE PREMIUM
    Fase 3 - Archivo independiente ampliado
 
@@ -60,7 +68,7 @@
 (function(){
   'use strict';
 
-  const AURO_FIN_CONFIG_KEYS = Object.freeze({
+  const IASYN_FIN_CONFIG_KEYS = Object.freeze({
     moneda: 'moneda',
     meta_mensual: 'meta_mensual',
     horas_facturables_mes: 'horas_facturables_mes',
@@ -70,7 +78,7 @@
   });
 
   /* Sugerencias de alta. No fijan montos y siguen siendo editables. */
-  const AURO_FIN_GASTO_SUGERENCIAS = Object.freeze({
+  const IASYN_FIN_GASTO_SUGERENCIAS = Object.freeze({
     'Alquiler': { categoria: 'Infraestructura', periodicidad: 'Mensual' },
     'Luz': { categoria: 'Servicios básicos', periodicidad: 'Mensual' },
     'Agua': { categoria: 'Servicios básicos', periodicidad: 'Mensual' },
@@ -90,11 +98,11 @@
     'Depreciación de equipos': { categoria: 'Equipos/Depreciación', periodicidad: 'Mensual' }
   });
 
-  /* Modelo financiero base entregado para IASYN.
+  /* Modelo financiero base IASYN.
      La carga es manual por botón, nunca automática al abrir.
      Tasa de Habilitación permanece disponible en catálogo pero no se precarga
      porque el documento base no proporciona un valor. */
-  const AURO_FIN_GASTOS_BASE_IASYN = Object.freeze([
+  const IASYN_FIN_GASTOS_BASE = Object.freeze([
     { nombre_gasto:'Alquiler', categoria:'Infraestructura', valor:950, periodicidad:'Mensual' },
     { nombre_gasto:'Luz', categoria:'Servicios básicos', valor:40, periodicidad:'Mensual' },
     { nombre_gasto:'Agua', categoria:'Servicios básicos', valor:10, periodicidad:'Mensual' },
@@ -110,15 +118,15 @@
     { nombre_gasto:'Depreciación de equipos', categoria:'Equipos/Depreciación', valor:350, periodicidad:'Mensual' }
   ]);
 
-  let auroFinanzasConfigCargada = false;
-  let auroFinanzasGastosCargados = false;
-  let auroFinanzasGastos = [];
+  let iasynFinanzasConfigCargada = false;
+  let iasynFinanzasGastosCargados = false;
+  let iasynFinanzasGastos = [];
 
   /* Estado aislado: configuración económica de médicos.
      No modifica el catálogo clínico de médicos. */
-  let auroFinanzasMedicosCargados = false;
-  let auroFinanzasCatalogoMedicos = [];
-  let auroFinanzasConfigMedicos = [];
+  let iasynFinanzasMedicosCargados = false;
+  let iasynFinanzasCatalogoMedicos = [];
+  let iasynFinanzasConfigMedicos = [];
 
   function finEl(id){
     return document.getElementById(id);
@@ -172,14 +180,14 @@
     const btn = finEl(id);
     if(!btn) return;
 
-    if(!btn.dataset.auroTextoOriginal){
-      btn.dataset.auroTextoOriginal = btn.innerHTML;
+    if(!btn.dataset.iasynTextoOriginal){
+      btn.dataset.iasynTextoOriginal = btn.innerHTML;
     }
 
     btn.disabled = !!bloqueado;
     btn.innerHTML = bloqueado
       ? '<i class="bi bi-arrow-clockwise me-1"></i>' + finEscape(texto || 'Procesando...')
-      : btn.dataset.auroTextoOriginal;
+      : btn.dataset.iasynTextoOriginal;
   }
 
   function finValorConfig(config, clave, respaldo){
@@ -202,7 +210,7 @@
   }
 
   async function cargarConfiguracionFinanzas(forzar){
-    if(auroFinanzasConfigCargada && !forzar) return;
+    if(iasynFinanzasConfigCargada && !forzar) return;
 
     finValidarApi();
     finSetMsg('finanzasConfigMsg', 'Cargando configuración financiera...', 'info');
@@ -212,24 +220,24 @@
       const datos = config && typeof config === 'object' && !Array.isArray(config) ? config : {};
 
       finAsignarValor('cfgFinMoneda',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.moneda, 'USD'));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.moneda, 'USD'));
 
       finAsignarValor('cfgFinMetaMensual',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.meta_mensual, ''));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.meta_mensual, ''));
 
       finAsignarValor('cfgFinHorasFacturables',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.horas_facturables_mes, ''));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.horas_facturables_mes, ''));
 
       finAsignarValor('cfgFinMargenMinimo',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.margen_minimo, ''));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.margen_minimo, ''));
 
       finAsignarValor('cfgFinPorcentajeReferido',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.porcentaje_referido_predeterminado, ''));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.porcentaje_referido_predeterminado, ''));
 
       finAsignarValor('cfgFinDiasCartera',
-        finValorConfig(datos, AURO_FIN_CONFIG_KEYS.dias_vencimiento_cartera, ''));
+        finValorConfig(datos, IASYN_FIN_CONFIG_KEYS.dias_vencimiento_cartera, ''));
 
-      auroFinanzasConfigCargada = true;
+      iasynFinanzasConfigCargada = true;
       finSetMsg('finanzasConfigMsg', 'Configuración financiera cargada.', 'ok');
     }catch(e){
       console.error('IASYN Finanzas - cargar configuración:', e);
@@ -297,28 +305,28 @@
       /* Guardados independientes por clave.
          No se llama ningún guardador clínico ni institucional. */
       await guardarClaveFinanciera(
-        AURO_FIN_CONFIG_KEYS.moneda,
+        IASYN_FIN_CONFIG_KEYS.moneda,
         moneda,
         'Moneda principal del módulo financiero',
         'texto'
       );
 
       await guardarClaveFinanciera(
-        AURO_FIN_CONFIG_KEYS.meta_mensual,
+        IASYN_FIN_CONFIG_KEYS.meta_mensual,
         meta,
         'Meta mensual de ingresos',
         'numero'
       );
 
       await guardarClaveFinanciera(
-        AURO_FIN_CONFIG_KEYS.horas_facturables_mes,
+        IASYN_FIN_CONFIG_KEYS.horas_facturables_mes,
         horas,
         'Horas facturables estimadas por mes',
         'numero'
       );
 
       await guardarClaveFinanciera(
-        AURO_FIN_CONFIG_KEYS.margen_minimo,
+        IASYN_FIN_CONFIG_KEYS.margen_minimo,
         margen,
         'Margen mínimo objetivo en porcentaje',
         'numero'
@@ -326,7 +334,7 @@
 
       if(finEl('cfgFinPorcentajeReferido')){
         await guardarClaveFinanciera(
-          AURO_FIN_CONFIG_KEYS.porcentaje_referido_predeterminado,
+          IASYN_FIN_CONFIG_KEYS.porcentaje_referido_predeterminado,
           referido,
           'Porcentaje de referido predeterminado',
           'numero'
@@ -335,14 +343,14 @@
 
       if(finEl('cfgFinDiasCartera')){
         await guardarClaveFinanciera(
-          AURO_FIN_CONFIG_KEYS.dias_vencimiento_cartera,
+          IASYN_FIN_CONFIG_KEYS.dias_vencimiento_cartera,
           diasCartera,
           'Días predeterminados para vencimiento de cartera',
           'numero'
         );
       }
 
-      auroFinanzasConfigCargada = false;
+      iasynFinanzasConfigCargada = false;
       await cargarConfiguracionFinanzas(true);
 
       finSetMsg('finanzasConfigMsg', 'Configuración financiera guardada correctamente.', 'ok');
@@ -488,7 +496,7 @@
 
   function aplicarSugerenciasGastoFinanzas(){
     const nombre = obtenerNombreGastoFinanzas();
-    const sugerencia = AURO_FIN_GASTO_SUGERENCIAS[nombre];
+    const sugerencia = IASYN_FIN_GASTO_SUGERENCIAS[nombre];
     if(!sugerencia) return;
 
     asignarCategoriaGastoFinanzas(sugerencia.categoria);
@@ -516,7 +524,7 @@
   function finBuscarGastoActivoDuplicado(nombre, excluirId){
     const clave = finNormalizarClaveGasto(nombre);
     const excluir = finTexto(excluirId);
-    return auroFinanzasGastos.find(function(g){
+    return iasynFinanzasGastos.find(function(g){
       return finTexto(g.id_gasto) !== excluir &&
         finNormalizarClaveGasto(g.nombre_gasto) === clave &&
         finTexto(g.estado || 'Activo').toLowerCase() === 'activo';
@@ -660,7 +668,7 @@
   }
 
   async function cargarGastosFijosFinanzas(forzar){
-    if(auroFinanzasGastosCargados && !forzar){
+    if(iasynFinanzasGastosCargados && !forzar){
       renderGastosFijosFinanzas();
       return;
     }
@@ -670,13 +678,13 @@
 
     try{
       const datos = await window.apiGet('listarGastosFijosFinancieros');
-      auroFinanzasGastos = Array.isArray(datos) ? datos : [];
-      auroFinanzasGastosCargados = true;
+      iasynFinanzasGastos = Array.isArray(datos) ? datos : [];
+      iasynFinanzasGastosCargados = true;
       renderGastosFijosFinanzas();
       finSetMsg('finanzasGastosMsg', 'Gastos fijos cargados.', 'ok');
     }catch(e){
       console.error('IASYN Finanzas - cargar gastos:', e);
-      auroFinanzasGastos = [];
+      iasynFinanzasGastos = [];
       renderGastosFijosFinanzas();
       finSetMsg('finanzasGastosMsg',
         'No se pudieron cargar los gastos fijos: ' + finTexto(e.message || e),
@@ -688,14 +696,14 @@
     const tbody = finEl('finGastosTbody');
     const mobile = finEl('finGastosMobile');
 
-    if(!auroFinanzasGastos.length){
+    if(!iasynFinanzasGastos.length){
       if(tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-3">Sin gastos fijos registrados.</td></tr>';
       if(mobile) mobile.innerHTML = '<div class="text-muted text-center py-3">Sin gastos fijos registrados.</div>';
       return;
     }
 
     if(tbody){
-      tbody.innerHTML = auroFinanzasGastos.map(function(g){
+      tbody.innerHTML = iasynFinanzasGastos.map(function(g){
         const activo = finEstadoActivo(g.estado);
         return '<tr>' +
           '<td>' + finEscape(g.nombre_gasto) + '</td>' +
@@ -716,7 +724,7 @@
     }
 
     if(mobile){
-      mobile.innerHTML = auroFinanzasGastos.map(function(g){
+      mobile.innerHTML = iasynFinanzasGastos.map(function(g){
         const activo = finEstadoActivo(g.estado);
         return '<article class="fin-mobile-card">' +
           '<div class="fin-mobile-title"><strong>' + finEscape(g.nombre_gasto) + '</strong><span class="' + (activo ? 'fin-state-active' : 'fin-state-inactive') + '">' + finEscape(g.estado || 'Activo') + '</span></div>' +
@@ -749,7 +757,7 @@
 
     /* Mantiene compatible finSetBoton(): al finalizar Guardando...,
        restaura la etiqueta correcta según el modo actual. */
-    btn.dataset.auroTextoOriginal = etiqueta;
+    btn.dataset.iasynTextoOriginal = etiqueta;
     if(!btn.disabled) btn.innerHTML = etiqueta;
   }
 
@@ -806,7 +814,7 @@
 
     if(!id || !estado) return;
 
-    const gasto = auroFinanzasGastos.find(function(g){
+    const gasto = iasynFinanzasGastos.find(function(g){
       return finTexto(g.id_gasto) === id;
     });
 
@@ -846,7 +854,7 @@
         throw new Error((respuesta && respuesta.message) || 'No se pudo actualizar el estado del gasto.');
       }
 
-      auroFinanzasGastosCargados = false;
+      iasynFinanzasGastosCargados = false;
       await cargarGastosFijosFinanzas(true);
 
       finSetMsg(
@@ -871,7 +879,7 @@
     finValidarApi();
 
     const id = finTexto(idGasto);
-    const gasto = auroFinanzasGastos.find(function(g){ return finTexto(g.id_gasto) === id; });
+    const gasto = iasynFinanzasGastos.find(function(g){ return finTexto(g.id_gasto) === id; });
     if(!gasto){ alert('No se encontró el gasto seleccionado.'); return; }
 
     if(!confirm('Eliminar se usa únicamente para registros creados por error. ¿Desea continuar con "' + finTexto(gasto.nombre_gasto) + '"?')) return;
@@ -893,7 +901,7 @@
       }
 
       limpiarFormularioGastoFinanzas();
-      auroFinanzasGastosCargados = false;
+      iasynFinanzasGastosCargados = false;
       await cargarGastosFijosFinanzas(true);
       finSetMsg('finanzasGastosMsg', 'Gasto eliminado correctamente.', 'ok');
     }catch(e){
@@ -907,9 +915,9 @@
     finValidarApi();
 
     const fechaInicio = finTexto(finEl('finGastoFechaInicio')?.value) || fechaHoyFinanzas();
-    const faltantes = AURO_FIN_GASTOS_BASE_IASYN.filter(function(base){
+    const faltantes = IASYN_FIN_GASTOS_BASE.filter(function(base){
       const clave = finNormalizarClaveGasto(base.nombre_gasto);
-      return !auroFinanzasGastos.some(function(g){
+      return !iasynFinanzasGastos.some(function(g){
         return finNormalizarClaveGasto(g.nombre_gasto) === clave;
       });
     });
@@ -952,7 +960,7 @@
         }
       }
 
-      auroFinanzasGastosCargados = false;
+      iasynFinanzasGastosCargados = false;
       await cargarGastosFijosFinanzas(true);
       finSetMsg(
         'finanzasGastosMsg',
@@ -969,7 +977,7 @@
 
   function cargarGastoEnFormularioFinanzas(idGasto){
     const id = finTexto(idGasto);
-    const gasto = auroFinanzasGastos.find(function(g){
+    const gasto = iasynFinanzasGastos.find(function(g){
       return finTexto(g.id_gasto) === id;
     });
 
@@ -1068,7 +1076,7 @@
       }
 
       limpiarFormularioGastoFinanzas();
-      auroFinanzasGastosCargados = false;
+      iasynFinanzasGastosCargados = false;
       await cargarGastosFijosFinanzas(true);
       finSetMsg('finanzasGastosMsg', 'Gasto fijo guardado correctamente.', 'ok');
     }catch(e){
@@ -1097,7 +1105,7 @@
   }
 
   async function cargarMedicosFinanzas(forzar){
-    if(auroFinanzasMedicosCargados && !forzar){
+    if(iasynFinanzasMedicosCargados && !forzar){
       renderConfiguracionMedicosFinanzas();
       return;
     }
@@ -1111,17 +1119,17 @@
         window.apiGet('listarConfiguracionMedicosFinanciera')
       ]);
 
-      auroFinanzasCatalogoMedicos = Array.isArray(resultados[0]) ? resultados[0] : [];
-      auroFinanzasConfigMedicos = Array.isArray(resultados[1]) ? resultados[1] : [];
-      auroFinanzasMedicosCargados = true;
+      iasynFinanzasCatalogoMedicos = Array.isArray(resultados[0]) ? resultados[0] : [];
+      iasynFinanzasConfigMedicos = Array.isArray(resultados[1]) ? resultados[1] : [];
+      iasynFinanzasMedicosCargados = true;
 
       renderSelectMedicosFinanzas();
       renderConfiguracionMedicosFinanzas();
       finSetMsg('finanzasMedicosMsg', 'Configuración económica de médicos cargada.', 'ok');
     }catch(e){
       console.error('IASYN Finanzas - cargar médicos:', e);
-      auroFinanzasCatalogoMedicos = [];
-      auroFinanzasConfigMedicos = [];
+      iasynFinanzasCatalogoMedicos = [];
+      iasynFinanzasConfigMedicos = [];
       renderSelectMedicosFinanzas();
       renderConfiguracionMedicosFinanzas();
       finSetMsg(
@@ -1138,7 +1146,7 @@
 
     const actual = finTexto(select.value);
     select.innerHTML = '<option value="">Seleccione médico...</option>' +
-      auroFinanzasCatalogoMedicos.map(function(m){
+      iasynFinanzasCatalogoMedicos.map(function(m){
         const id = finTexto(m.id_medico);
         return '<option value="' + finEscape(id) + '">' +
           finEscape(finNombreMedico(m)) +
@@ -1150,7 +1158,7 @@
 
   function finBuscarNombreMedico(idMedico){
     const id = finTexto(idMedico);
-    const medico = auroFinanzasCatalogoMedicos.find(function(m){
+    const medico = iasynFinanzasCatalogoMedicos.find(function(m){
       return finTexto(m.id_medico) === id;
     });
     return medico ? finNombreMedico(medico) : id;
@@ -1160,14 +1168,14 @@
     const tbody = finEl('finMedicosTbody');
     const mobile = finEl('finMedicosMobile');
 
-    if(!auroFinanzasConfigMedicos.length){
+    if(!iasynFinanzasConfigMedicos.length){
       if(tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Sin configuraciones económicas de médicos registradas.</td></tr>';
       if(mobile) mobile.innerHTML = '<div class="text-muted text-center py-3">Sin configuraciones económicas de médicos registradas.</div>';
       return;
     }
 
     if(tbody){
-      tbody.innerHTML = auroFinanzasConfigMedicos.map(function(c){
+      tbody.innerHTML = iasynFinanzasConfigMedicos.map(function(c){
         return '<tr>' +
           '<td>' + finEscape(finBuscarNombreMedico(c.id_medico)) + '</td>' +
           '<td>' + finEscape(c.tipo_pago) + '</td>' +
@@ -1182,7 +1190,7 @@
     }
 
     if(mobile){
-      mobile.innerHTML = auroFinanzasConfigMedicos.map(function(c){
+      mobile.innerHTML = iasynFinanzasConfigMedicos.map(function(c){
         const activo = finEstadoActivo(c.estado);
         return '<article class="fin-mobile-card">' +
           '<div class="fin-mobile-title"><strong>' + finEscape(finBuscarNombreMedico(c.id_medico)) + '</strong><span class="' + (activo ? 'fin-state-active' : 'fin-state-inactive') + '">' + finEscape(c.estado || 'Activo') + '</span></div>' +
@@ -1237,7 +1245,7 @@
 
   function cargarMedicoEnFormularioFinanzas(idConfig){
     const id = finTexto(idConfig);
-    const config = auroFinanzasConfigMedicos.find(function(c){
+    const config = iasynFinanzasConfigMedicos.find(function(c){
       return finTexto(c.id_config_medico) === id;
     });
     if(!config) return;
@@ -1322,7 +1330,7 @@
       }
 
       limpiarFormularioMedicoFinanzas();
-      auroFinanzasMedicosCargados = false;
+      iasynFinanzasMedicosCargados = false;
       await cargarMedicosFinanzas(true);
       finSetMsg('finanzasMedicosMsg', 'Configuración económica del médico guardada correctamente.', 'ok');
     }catch(e){
@@ -1350,14 +1358,14 @@
 
   function enlazarEventosConfigFinanzas(){
     const btnConfig = finEl('btnGuardarConfigFinanzas');
-    if(btnConfig && btnConfig.dataset.auroFinInit !== '1'){
-      btnConfig.dataset.auroFinInit = '1';
+    if(btnConfig && btnConfig.dataset.iasynFinInit !== '1'){
+      btnConfig.dataset.iasynFinInit = '1';
       btnConfig.addEventListener('click', guardarConfiguracionFinanzas);
     }
 
     const selectorNombreGasto = finEl('finGastoNombre');
-    if(selectorNombreGasto && selectorNombreGasto.dataset.auroFinNombreInit !== '1'){
-      selectorNombreGasto.dataset.auroFinNombreInit = '1';
+    if(selectorNombreGasto && selectorNombreGasto.dataset.iasynFinNombreInit !== '1'){
+      selectorNombreGasto.dataset.iasynFinNombreInit = '1';
       selectorNombreGasto.addEventListener('change', function(){
         actualizarNombreOtroGastoFinanzas();
         aplicarSugerenciasGastoFinanzas();
@@ -1366,36 +1374,36 @@
     }
 
     const selectorCategoriaGasto = finEl('finGastoCategoria');
-    if(selectorCategoriaGasto && selectorCategoriaGasto.dataset.auroFinCategoriaInit !== '1'){
-      selectorCategoriaGasto.dataset.auroFinCategoriaInit = '1';
+    if(selectorCategoriaGasto && selectorCategoriaGasto.dataset.iasynFinCategoriaInit !== '1'){
+      selectorCategoriaGasto.dataset.iasynFinCategoriaInit = '1';
       selectorCategoriaGasto.addEventListener('change', actualizarCategoriaOtroGastoFinanzas);
       actualizarCategoriaOtroGastoFinanzas();
     }
 
     const btnGasto = finEl('btnGuardarGastoFinanzas');
-    if(btnGasto && btnGasto.dataset.auroFinInit !== '1'){
-      btnGasto.dataset.auroFinInit = '1';
+    if(btnGasto && btnGasto.dataset.iasynFinInit !== '1'){
+      btnGasto.dataset.iasynFinInit = '1';
       btnGasto.addEventListener('click', guardarGastoFijoFinanzas);
     }
 
     const btnLimpiar = finEl('btnLimpiarGastoFinanzas');
-    if(btnLimpiar && btnLimpiar.dataset.auroFinInit !== '1'){
-      btnLimpiar.dataset.auroFinInit = '1';
+    if(btnLimpiar && btnLimpiar.dataset.iasynFinInit !== '1'){
+      btnLimpiar.dataset.iasynFinInit = '1';
       btnLimpiar.addEventListener('click', limpiarFormularioGastoFinanzas);
     }
 
     ['finGastoValor', 'finGastoPeriodicidad'].forEach(function(id){
       const el = finEl(id);
-      if(el && el.dataset.auroFinInit !== '1'){
-        el.dataset.auroFinInit = '1';
+      if(el && el.dataset.iasynFinInit !== '1'){
+        el.dataset.iasynFinInit = '1';
         el.addEventListener('input', actualizarProrrateoGastoFinanzas);
         el.addEventListener('change', actualizarProrrateoGastoFinanzas);
       }
     });
 
     function enlazarAccionesGastos_(contenedor){
-      if(!contenedor || contenedor.dataset.auroFinAccionesInit === '1') return;
-      contenedor.dataset.auroFinAccionesInit = '1';
+      if(!contenedor || contenedor.dataset.iasynFinAccionesInit === '1') return;
+      contenedor.dataset.iasynFinAccionesInit = '1';
       contenedor.addEventListener('click', function(ev){
         const btnEditar = ev.target.closest('[data-fin-editar-gasto]');
         if(btnEditar){
@@ -1423,33 +1431,33 @@
     enlazarAccionesGastos_(finEl('finGastosMobile'));
 
     const btnBase = finEl('btnCargarBaseGastosFinanzas');
-    if(btnBase && btnBase.dataset.auroFinInit !== '1'){
-      btnBase.dataset.auroFinInit = '1';
+    if(btnBase && btnBase.dataset.iasynFinInit !== '1'){
+      btnBase.dataset.iasynFinInit = '1';
       btnBase.addEventListener('click', cargarGastosBaseIasynFinanzas);
     }
 
     const btnMedico = finEl('btnGuardarMedicoFinanzas');
-    if(btnMedico && btnMedico.dataset.auroFinInit !== '1'){
-      btnMedico.dataset.auroFinInit = '1';
+    if(btnMedico && btnMedico.dataset.iasynFinInit !== '1'){
+      btnMedico.dataset.iasynFinInit = '1';
       btnMedico.addEventListener('click', guardarConfiguracionMedicoFinanzas);
     }
 
     const btnLimpiarMedico = finEl('btnLimpiarMedicoFinanzas');
-    if(btnLimpiarMedico && btnLimpiarMedico.dataset.auroFinInit !== '1'){
-      btnLimpiarMedico.dataset.auroFinInit = '1';
+    if(btnLimpiarMedico && btnLimpiarMedico.dataset.iasynFinInit !== '1'){
+      btnLimpiarMedico.dataset.iasynFinInit = '1';
       btnLimpiarMedico.addEventListener('click', limpiarFormularioMedicoFinanzas);
     }
 
     const tipoPagoMedico = finEl('finMedicoTipoPago');
-    if(tipoPagoMedico && tipoPagoMedico.dataset.auroFinInit !== '1'){
-      tipoPagoMedico.dataset.auroFinInit = '1';
+    if(tipoPagoMedico && tipoPagoMedico.dataset.iasynFinInit !== '1'){
+      tipoPagoMedico.dataset.iasynFinInit = '1';
       tipoPagoMedico.addEventListener('change', actualizarCamposTipoPagoMedicoFinanzas);
       actualizarCamposTipoPagoMedicoFinanzas();
     }
 
     function enlazarEdicionMedicos_(contenedor){
-      if(!contenedor || contenedor.dataset.auroFinMedInit === '1') return;
-      contenedor.dataset.auroFinMedInit = '1';
+      if(!contenedor || contenedor.dataset.iasynFinMedInit === '1') return;
+      contenedor.dataset.iasynFinMedInit = '1';
       contenedor.addEventListener('click', function(ev){
         const btn = ev.target.closest('[data-fin-editar-medico]');
         if(!btn) return;
@@ -1461,15 +1469,15 @@
 
     /* Resumen mensual recuperado: solo lectura / actualización manual. */
     const resumenPeriodo = finEl('finResumenPeriodo');
-    if(resumenPeriodo && resumenPeriodo.dataset.auroFinInit !== '1'){
-      resumenPeriodo.dataset.auroFinInit = '1';
+    if(resumenPeriodo && resumenPeriodo.dataset.iasynFinInit !== '1'){
+      resumenPeriodo.dataset.iasynFinInit = '1';
       if(!resumenPeriodo.value) resumenPeriodo.value = finMesActual();
       resumenPeriodo.addEventListener('change', function(){ cargarResumenMensualFinanzas(true); });
     }
 
     const btnResumen = finEl('btnActualizarResumenFinanzas');
-    if(btnResumen && btnResumen.dataset.auroFinInit !== '1'){
-      btnResumen.dataset.auroFinInit = '1';
+    if(btnResumen && btnResumen.dataset.iasynFinInit !== '1'){
+      btnResumen.dataset.iasynFinInit = '1';
       btnResumen.addEventListener('click', function(){ cargarResumenMensualFinanzas(true); });
     }
   }
@@ -1486,7 +1494,7 @@
 
   /* API pública mínima para configuracion.html.
      No redefine funciones globales existentes. */
-  window.auroConfigFinanzas = Object.freeze({
+  const IASYN_CONFIG_FINANZAS_API = Object.freeze({
     inicializar: inicializarConfiguracionFinanzas,
     cargarConfiguracion: function(){ return cargarConfiguracionFinanzas(true); },
     cargarGastos: function(){ return cargarGastosFijosFinanzas(true); },
@@ -1502,6 +1510,10 @@
     limpiarMedico: limpiarFormularioMedicoFinanzas,
     preparar: prepararConfigFinanzas
   });
+
+  window.IASYN_CONFIG_FINANZAS = IASYN_CONFIG_FINANZAS_API;
+  /* Compatibilidad temporal con configuracion.html heredado. */
+  window.auroConfigFinanzas = IASYN_CONFIG_FINANZAS_API;
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', prepararConfigFinanzas, {once:true});
