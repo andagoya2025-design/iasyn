@@ -1,7 +1,14 @@
 /*
-AUROSANAX Clinical ERP
+ IASYN — AISLAMIENTO DICTADO CLÍNICO
+ - Solo actúa sobre textareas permitidos dentro de #hc_anamnesis.
+ - No guarda datos, no llama Apps Script, Google Sheets ni Drive.
+ - El texto dictado dispara únicamente eventos input/change del campo activo.
+ - Se detiene al cambiar paciente, atención, módulo, pestaña o ventana.
+*/
+/*
+IASYN Clinical ERP
 Archivo: dictado_clinico.js
-PRUEBA CONTROLADA - ANAMNESIS
+DICTADO CLÍNICO CONTROLADO - ANAMNESIS
 No guarda datos, no usa Apps Script ni Google Sheets.
 */
 (function(){
@@ -39,24 +46,24 @@ No guarda datos, no usa Apps Script ni Google Sheets.
   }
 
   function estilos(){
-    if(document.getElementById('auro-dictado-clinico-style')) return;
+    if(document.getElementById('iasyn-dictado-clinico-style')) return;
     const st = document.createElement('style');
-    st.id = 'auro-dictado-clinico-style';
+    st.id = 'iasyn-dictado-clinico-style';
     st.textContent = `
-      .auro-dictado-wrap{display:flex;align-items:center;gap:8px;margin:6px 0 8px;flex-wrap:wrap}
-      .auro-dictado-btn{border:1px solid #d1d5db;background:#fff;color:#374151;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-      .auro-dictado-btn.auro-escuchando{border-color:#dc2626;color:#b91c1c;background:#fef2f2}
-      .auro-dictado-status{font-size:12px;color:#6b7280}
-      .auro-dictado-status.activo{color:#b91c1c;font-weight:700}
+      .iasyn-dictado-wrap{display:flex;align-items:center;gap:8px;margin:6px 0 8px;flex-wrap:wrap}
+      .iasyn-dictado-btn{border:1px solid #d1d5db;background:#fff;color:#374151;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+      .iasyn-dictado-btn.iasyn-escuchando{border-color:#dc2626;color:#b91c1c;background:#fef2f2}
+      .iasyn-dictado-status{font-size:12px;color:#6b7280}
+      .iasyn-dictado-status.activo{color:#b91c1c;font-weight:700}
     `;
     document.head.appendChild(st);
   }
 
   function limpiarEstado(){
     if(state.button){
-      state.button.classList.remove('auro-escuchando');
+      state.button.classList.remove('iasyn-escuchando');
       state.button.innerHTML = '<i class="bi bi-mic"></i> Dictar';
-      const status = state.button.parentElement?.querySelector('.auro-dictado-status');
+      const status = state.button.parentElement?.querySelector('.iasyn-dictado-status');
       if(status){ status.textContent=''; status.classList.remove('activo'); }
     }
     state.recognition = null;
@@ -69,7 +76,7 @@ No guarda datos, no usa Apps Script ni Google Sheets.
     const btn = state.button;
     try{ state.recognition?.stop(); }catch(_e){}
     if(btn){
-      const status = btn.parentElement?.querySelector('.auro-dictado-status');
+      const status = btn.parentElement?.querySelector('.iasyn-dictado-status');
       if(status) status.textContent = mensaje || '';
     }
     setTimeout(limpiarEstado, 0);
@@ -114,9 +121,9 @@ No guarda datos, no usa Apps Script ni Google Sheets.
     state.listening = true;
 
     r.onstart = () => {
-      boton.classList.add('auro-escuchando');
+      boton.classList.add('iasyn-escuchando');
       boton.innerHTML = '<i class="bi bi-stop-circle"></i> Detener';
-      const status = boton.parentElement?.querySelector('.auro-dictado-status');
+      const status = boton.parentElement?.querySelector('.iasyn-dictado-status');
       if(status){ status.textContent='Escuchando…'; status.classList.add('activo'); }
     };
 
@@ -130,28 +137,28 @@ No guarda datos, no usa Apps Script ni Google Sheets.
     };
 
     r.onerror = event => {
-      const status = boton.parentElement?.querySelector('.auro-dictado-status');
+      const status = boton.parentElement?.querySelector('.iasyn-dictado-status');
       if(status) status.textContent = /not-allowed|service-not-allowed/.test(String(event?.error||'')) ? 'Permiso de micrófono bloqueado.' : 'Dictado detenido.';
     };
 
     r.onend = limpiarEstado;
 
-    try{ r.start(); }catch(e){ console.warn('AUROSANAX Dictado Clínico:', e); limpiarEstado(); }
+    try{ r.start(); }catch(e){ console.warn('IASYN Dictado Clínico:', e); limpiarEstado(); }
   }
 
   function instalar(campo){
-    if(!campoPermitido(campo) || campo.dataset.auroDictadoClinico === '1') return;
-    campo.dataset.auroDictadoClinico = '1';
+    if(!campoPermitido(campo) || campo.dataset.iasynDictadoClinico === '1') return;
+    campo.dataset.iasynDictadoClinico = '1';
     campo.setAttribute('lang','es-EC');
 
     const wrap = document.createElement('div');
-    wrap.className = 'auro-dictado-wrap';
+    wrap.className = 'iasyn-dictado-wrap';
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'auro-dictado-btn';
+    btn.className = 'iasyn-dictado-btn';
     btn.innerHTML = '<i class="bi bi-mic"></i> Dictar';
     const status = document.createElement('span');
-    status.className = 'auro-dictado-status';
+    status.className = 'iasyn-dictado-status';
 
     btn.addEventListener('click', ev => {
       ev.preventDefault();
@@ -201,7 +208,9 @@ No guarda datos, no usa Apps Script ni Google Sheets.
       if(state.listening) detener('Dictado detenido por seguridad.');
     });
 
-    window.auroDetenerDictadoClinico = () => detener('Dictado detenido.');
+    window.iasynDetenerDictadoClinico = () => detener('Dictado detenido.');
+    /* Alias temporal de compatibilidad para integraciones heredadas. */
+    window.auroDetenerDictadoClinico = window.iasynDetenerDictadoClinico;
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',init,{once:true});
