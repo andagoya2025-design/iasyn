@@ -1,10 +1,18 @@
+/*
+  IASYN - COMPATIBILIDAD ANTIRREGRESIVA
+  Los nombres internos auro* y las claves legacy compartidas con Pacientes,
+  Atenciones e Historia se conservan temporalmente porque forman parte del
+  contrato entre módulos. No representan una conexión externa con AUROSANAX.
+  Este módulo no contiene URLs, Spreadsheet IDs ni Drive IDs propios.
+*/
+
 /* ============================================================
-   AUROSANAX ERP - MÓDULO AGENDA MÉDICA
+   IASYN ERP - MÓDULO AGENDA MÉDICA
    Extraído quirúrgicamente desde index.
    Conserva los nombres públicos para compatibilidad.
 ============================================================ */ 
 
-/* AUROSANAX: función normalizarEstadoAgenda movida a pacientes.js */
+/* IASYN: función normalizarEstadoAgenda movida a pacientes.js */
 
 function badgeEstadoAgenda(estado){
   const e = normalizarEstadoAgenda(estado);
@@ -16,7 +24,7 @@ function badgeEstadoAgenda(estado){
   return '<span class="badge-auro badge-warn">Sin estado</span>';
 }
 
-/* AUROSANAX: función formatearFechaVisual movida a pacientes.js */
+/* IASYN: función formatearFechaVisual movida a pacientes.js */
 
 
 function abrirSecretaria(){
@@ -327,7 +335,7 @@ function auroNormalizarTextoAgenda(valor){
 }
 
 /*
-  AUROSANAX - CONTROL QUIRÚRGICO DE CITA YA UTILIZADA
+  IASYN - CONTROL QUIRÚRGICO DE CITA YA UTILIZADA
   --------------------------------------------------
   La acción clínica se bloquea únicamente cuando ya existe una atención
   vinculada al mismo id_cita. No se compara solo por paciente, fecha o nombre.
@@ -338,7 +346,7 @@ function auroAtencionesLocalesAgenda(){
     const lista = raw ? JSON.parse(raw) : [];
     return Array.isArray(lista) ? lista : [];
   }catch(error){
-    console.warn('AUROSANAX AGENDA: no se pudieron leer las atenciones locales.', error);
+    console.warn('IASYN AGENDA: no se pudieron leer las atenciones locales.', error);
     return [];
   }
 }
@@ -400,7 +408,7 @@ function auroActualizarFiltroMedicosAgenda(){
 }
 
 /* ============================================================
-   AUROSANAX AGENDA 03 - CREAR PACIENTE DESDE CITA
+   IASYN AGENDA 03 - CREAR PACIENTE DESDE CITA
    Cambio quirúrgico y antirregresivo:
    - Solo actúa cuando la cita NO tiene un paciente válido vinculado.
    - Reutiliza el modal normal de Pacientes; no crea otro formulario.
@@ -669,13 +677,13 @@ function abrirWhatsAppCitaAgenda(index){
     return;
   }
 
-  const mensaje = `Hola ${c.nombre || ''},\n\nLe saluda AUROSANAX.\nLe escribimos sobre su solicitud de cita para ${c.servicio || 'atención médica'} el ${formatearFechaVisual(c.fecha_deseada)} a las ${c.hora_deseada || ''}.\n\nPor favor, confirme si mantiene su disponibilidad.`;
+  const mensaje = `Hola ${c.nombre || ''},\n\nLe saluda IASYN.\nLe escribimos sobre su solicitud de cita para ${c.servicio || 'atención médica'} el ${formatearFechaVisual(c.fecha_deseada)} a las ${c.hora_deseada || ''}.\n\nPor favor, confirme si mantiene su disponibilidad.`;
   abrirWhatsApp(c.whatsapp, mensaje);
 }
 
 
 /* ============================================================
-   AUROSANAX - LIMPIEZA SEGURA PARA HISTORIA NUEVA DESDE AGENDA
+   IASYN - LIMPIEZA SEGURA PARA HISTORIA NUEVA DESDE AGENDA
    Se ejecuta únicamente cuando la cita aún no tiene historia.
    No se aplica al abrir una historia existente.
 ============================================================ */
@@ -732,7 +740,7 @@ function auroLimpiarHistoriaNuevaDesdeAgenda(){
     });
 
   }catch(error){
-    console.warn('AUROSANAX AGENDA: no se pudo completar la limpieza de historia nueva.', error);
+    console.warn('IASYN AGENDA: no se pudo completar la limpieza de historia nueva.', error);
   }
 }
 
@@ -800,7 +808,7 @@ function abrirHistoriaDesdeAgenda(index){
   };
 
   /*
-    AUROSANAX - MODO EXPLÍCITO DESDE AGENDA
+    IASYN - MODO EXPLÍCITO DESDE AGENDA
     Agenda ya conoce si esta cita tiene una historia vinculada.
     No se deja que Pacientes lo deduzca usando otras historias del paciente.
   */
@@ -842,3 +850,15 @@ function abrirHistoriaDesdeAgenda(index){
     }, 80);
   }
 }
+/* ============================================================
+   IASYN AGENDA - API DE COMPATIBILIDAD
+============================================================ */
+window.IASYN_AGENDA = Object.assign(window.IASYN_AGENDA || {}, {
+  cargarCitasAgendaWeb,
+  renderAgendaWeb,
+  limpiarFiltrosAgenda,
+  cambiarPaginaAgenda,
+  abrirHistoriaDesdeAgenda,
+  abrirCrearPacienteDesdeAgenda,
+  abrirWhatsAppCitaAgenda
+});
