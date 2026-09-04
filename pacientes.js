@@ -1,5 +1,5 @@
 /*****************************************************************************************
- * AUROSANAX ERP DEMO - pacientes.js
+ * IASYN ERP - pacientes.js
  * Módulo Pacientes extraído desde index.html.
  *
  * IMPORTANTE:
@@ -301,7 +301,7 @@ function auroCitaPertenecePaciente(c, p){
 }
 
 /* ============================================================
-   AUROSANAX PACIENTES 07 - ÚLTIMA ATENCIÓN CLÍNICA ANTIRREGRESIVA
+   IASYN PACIENTES 07 - ÚLTIMA ATENCIÓN CLÍNICA ANTIRREGRESIVA
    Alcance EXCLUSIVO: cálculo de la columna "Última atención".
 
    Jerarquía permanente:
@@ -400,7 +400,7 @@ async function auroCargarAtencionesParaUltimaAtencion(forzar){
       auroAtencionesPacientesCargadas = true;
       return auroAtencionesPacientesCache;
     }catch(error){
-      console.warn('AUROSANAX PACIENTES: no se pudo refrescar Última atención desde Atenciones.', error);
+      console.warn('IASYN PACIENTES: no se pudo refrescar Última atención desde Atenciones.', error);
       return auroAtencionesPacientesCache;
     }finally{
       auroAtencionesPacientesCargando = null;
@@ -566,7 +566,7 @@ function resetPatients(){
 }
 
 /* ============================================================
-   AUROSANAX PACIENTES 0.5 - CÉDULA ECUATORIANA SEGURA EN FORMULARIO
+   IASYN PACIENTES 0.5 - CÉDULA ECUATORIANA SEGURA EN FORMULARIO
    Alcance exclusivo: input pCedula.
    - Se mantiene como TEXTO: conserva cero inicial.
    - Solo permite dígitos.
@@ -618,7 +618,7 @@ function auroValidarCedulaPacienteAntesDeGuardar(){
   const soloDigitos = auroCedulaPacienteSoloDigitos(original);
 
   /*
-   * AUROSANAX · IDENTIDAD DEL PACIENTE
+   * IASYN · IDENTIDAD DEL PACIENTE
    * - En un ALTA NUEVA la cédula es obligatoria.
    * - Debe contener exactamente 10 dígitos.
    * - Se conserva como texto para no perder el cero inicial.
@@ -695,7 +695,7 @@ function closePatientModal(){
 }
 
 /* ============================================================
-   AUROSANAX PACIENTES 0.4 - NOMBRE COMPATIBLE DE SOLO LECTURA
+   IASYN PACIENTES 0.4 - NOMBRE COMPATIBLE DE SOLO LECTURA
    Alcance:
    - Resuelve el nombre visible desde estructuras actuales o históricas.
    - No modifica Google Sheets.
@@ -870,7 +870,7 @@ async function cargarPacientesDesdeSheets(){
       })
       .catch(function(error){
         console.warn(
-          'AUROSANAX PACIENTES: no se pudo completar Última atención en segundo plano.',
+          'IASYN PACIENTES: no se pudo completar Última atención en segundo plano.',
           error
         );
       });
@@ -883,7 +883,7 @@ async function cargarPacientesDesdeSheets(){
 }
 
 /* ============================================================
-   AUROSANAX PACIENTES 05 - VÍNCULO SEGURO CON CITA DE AGENDA
+   IASYN PACIENTES 05 - VÍNCULO SEGURO CON CITA DE AGENDA
    Alcance exclusivo:
    - Solo se activa cuando el modal fue abierto por Agenda médica.
    - El guardado normal de pacientes permanece intacto.
@@ -991,7 +991,7 @@ async function auroVincularPacienteGuardadoConCita(contexto, datosGuardados, opc
 
 
 /* ============================================================
-   AUROSANAX PACIENTES - BARRERA LOCAL ANTIDUPLICIDAD DE CÉDULA
+   IASYN PACIENTES - BARRERA LOCAL ANTIDUPLICIDAD DE CÉDULA
    Alcance EXCLUSIVO:
    - Evita crear visualmente un paciente que el backend rechazará por
      documento duplicado.
@@ -1028,7 +1028,20 @@ function auroBuscarPacienteDuplicadoPorCedulaLocal(cedula, idPacienteExcluir){
   }) || null;
 }
 
+let iasynGuardandoPaciente = false;
+
 async function savePatient(){
+  if(iasynGuardandoPaciente) return;
+
+  iasynGuardandoPaciente = true;
+  const btnGuardarPaciente = document.getElementById('patientSaveBtn');
+  if(btnGuardarPaciente){
+    btnGuardarPaciente.disabled = true;
+    btnGuardarPaciente.dataset.iasynTextoOriginal = btnGuardarPaciente.innerHTML || btnGuardarPaciente.textContent || '';
+    btnGuardarPaciente.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Guardando...';
+  }
+
+  try{
   const campoNombres = document.getElementById('pNombres');
   const campoApellidos = document.getElementById('pApellidos');
   const campoNombreLegacy = document.getElementById('pNombre');
@@ -1122,7 +1135,7 @@ async function savePatient(){
     servicio_principal: document.getElementById('pServicio')?.value || 'Ginecología',
     antecedentes_importantes: document.getElementById('pNotas').value.trim(),
     estado: 'Activo',
-    creado_por: 'AUROSANAX ERP'
+    creado_por: 'IASYN ERP'
   };
 
   const pacienteLocal = {
@@ -1199,11 +1212,11 @@ async function savePatient(){
             auroLimpiarContextoPacienteDesdeAgenda();
             alert('Paciente registrado y vinculado correctamente a la cita.');
           }else{
-            console.warn('AUROSANAX PACIENTES: paciente guardado, vínculo de cita pendiente.', vinculo);
+            console.warn('IASYN PACIENTES: paciente guardado, vínculo de cita pendiente.', vinculo);
             alert('El paciente fue guardado, pero no se pudo confirmar automáticamente el vínculo con la cita. Actualice Agenda antes de continuar.');
           }
         }catch(errorVinculo){
-          console.error('AUROSANAX PACIENTES: error al vincular cita.', errorVinculo);
+          console.error('IASYN PACIENTES: error al vincular cita.', errorVinculo);
           alert('El paciente fue guardado, pero no se pudo confirmar el vínculo con la cita. Actualice Agenda antes de continuar.');
         }
       }
@@ -1216,10 +1229,19 @@ async function savePatient(){
     console.error(error);
     alert('No se pudo guardar en Google Sheets. Revise la conexión o la implementación del Apps Script.');
   }
+  }finally{
+    iasynGuardandoPaciente = false;
+    if(btnGuardarPaciente){
+      btnGuardarPaciente.disabled = false;
+      const original = btnGuardarPaciente.dataset.iasynTextoOriginal || '';
+      if(original) btnGuardarPaciente.innerHTML = original;
+      delete btnGuardarPaciente.dataset.iasynTextoOriginal;
+    }
+  }
 }
 
 /* ============================================================
-   AUROSANAX - CONTROL SEGURO DE APERTURA DE HISTORIA CLÍNICA
+   IASYN - CONTROL SEGURO DE APERTURA DE HISTORIA CLÍNICA
    - Compatible con llamadas antiguas: abrirHistoriaPaciente(idPaciente)
    - Admite modo opcional: 'nueva', 'existente' o 'auto'
    - No crea ni modifica IDs de historia.
@@ -1338,7 +1360,7 @@ function auroPrepararHistoriaNuevaPaciente(idPaciente){
         window[nombre]();
       }
     }catch(error){
-      console.warn('AUROSANAX PACIENTES: limpieza opcional no completada en ' + nombre, error);
+      console.warn('IASYN PACIENTES: limpieza opcional no completada en ' + nombre, error);
     }
   });
 
@@ -1545,10 +1567,10 @@ function limpiarObjetoParaSheets(obj){
 
 
 
-/* AUROSANAX: módulo Antecedentes movido a antecedentes.js para evitar duplicados. */
+/* IASYN: módulo Antecedentes movido a antecedentes.js para evitar duplicados. */
 
 /* ============================================================
-   AUROSANAX PACIENTES 06 - TELÉFONO / WHATSAPP INTERNACIONAL
+   IASYN PACIENTES 06 - TELÉFONO / WHATSAPP INTERNACIONAL
    Alcance EXCLUSIVO:
    - Conversión del número SOLO al abrir WhatsApp.
    - Conserva el valor real guardado en la ficha del paciente.
@@ -1622,12 +1644,12 @@ function abrirWhatsAppPaciente(idPaciente){
     alert('No se encontró el paciente seleccionado.');
     return;
   }
-  const mensaje = `Hola ${paciente.nombre || ''},\n\nLe saluda AUROSANAX.\nQueremos realizar seguimiento a su atención médica.\n\nSi presenta alguna novedad o requiere agendar un control, estamos atentos para ayudarle.`;
+  const mensaje = `Hola ${paciente.nombre || ''},\n\nLe saluda IASYN.\nQueremos realizar seguimiento a su atención médica.\n\nSi presenta alguna novedad o requiere agendar un control, estamos atentos para ayudarle.`;
   abrirWhatsApp(paciente.telefono, mensaje);
 }
 
 /*****************************************************************************************
- * AUROSANAX ERP DEMO - pacientes.js
+ * IASYN ERP - pacientes.js
  * FASE 2 MODULARIZACIÓN PACIENTES
  * Funciones de selección, resumen y tarjeta de paciente en Historia Clínica.
  * Movidas desde index.html para alivianar el archivo principal.
@@ -1655,7 +1677,7 @@ function actualizarTarjetaPacienteHistoria(paciente){
   setTextIfExists('hcAvatar', iniciales || 'A');
   setTextIfExists('hcCardNombre', nombre);
   setTextIfExists('hcCardEstado', paciente ? (paciente.estado || 'Paciente activo') : 'Historia activa');
-  setTextIfExists('hcCardServicio', paciente ? (paciente.servicio || 'Ginecología') : 'AUROSANAX');
+  setTextIfExists('hcCardServicio', paciente ? (paciente.servicio || 'Ginecología') : 'IASYN');
   setTextIfExists('hcCardCedula', paciente?.cedula || '—');
   setTextIfExists('hcCardNacimiento', fechaNacimiento ? formatearFechaVisual(fechaNacimiento) : '—');
   setTextIfExists('hcCardEdad', edad === '—' ? '—' : edad + ' años');
@@ -1716,7 +1738,7 @@ function seleccionarPacienteHistoria(){
 }
 
 /* ============================================================
-   AUROSANAX PACIENTES 08 - BARRERA ANTIRREGRESIVA HISTORIA NUEVA
+   IASYN PACIENTES 08 - BARRERA ANTIRREGRESIVA HISTORIA NUEVA
    Alcance EXCLUSIVO:
    - Evita que un id_historia residual de otro paciente convierta una
      historia realmente nueva en una actualización incorrecta.
@@ -1777,3 +1799,17 @@ function seleccionarPacienteHistoria(){
   guardarProtegido.__auroOriginal = guardarOriginal;
   window.guardarHistoriaClinicaERP = guardarProtegido;
 })();
+/* ============================================================
+   IASYN PACIENTES - API DE COMPATIBILIDAD
+   Se añaden aliases IASYN sin retirar nombres legacy consumidos por index
+   y por otros módulos clínicos.
+============================================================ */
+window.IASYN_PACIENTES = Object.assign(window.IASYN_PACIENTES || {}, {
+  getPacienteActivo,
+  renderPatients,
+  cargarPacientesDesdeSheets,
+  savePatient,
+  abrirHistoriaPaciente,
+  seleccionarPacienteHistoria,
+  abrirWhatsAppPaciente
+});
