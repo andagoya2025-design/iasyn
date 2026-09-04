@@ -1,5 +1,5 @@
 /* ==========================================================
-   AUROSANAX ERP · PREATENCIÓN 3.2.1
+   IASYN ERP · PREATENCIÓN 3.7.0
    Sala de espera + buscador + colaboración de Secretaría
    Versión quirúrgica / antirregresión · estado paciente no registrado
    ----------------------------------------------------------
@@ -18,7 +18,20 @@
 (function(){
   'use strict';
 
-  const seguridad=window.AUROSANAX_SEGURIDAD;
+  /*
+   * AISLAMIENTO IASYN
+   * - Sin URLs, Spreadsheet IDs ni Drive IDs directos.
+   * - No crea Atención/Historia/Examen físico.
+   * - Conserva IDs DOM/eventos legacy porque son contratos internos compartidos.
+   * - La persistencia continúa exclusivamente mediante el API configurado por IASYN.
+   */
+
+  /*
+   * IASYN: Seguridad propia primero.
+   * El alias AUROSANAX se conserva únicamente como compatibilidad temporal
+   * mientras los módulos heredados terminan su migración.
+   */
+  const seguridad=window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD;
   if(!seguridad) return;
 
   let pacientesCache=[];
@@ -35,9 +48,12 @@
   }
   function puedeCorregirPaciente(){ return tiene('pacientes_edicion_administrativa') || tiene('pacientes_edicion'); }
   function apiUrl(){
-    /* Mantiene primero el contrato que ya funcionaba en Preatención estable. */
-    return (seguridad.configuracion && seguridad.configuracion.apiUrl) ||
+    /* IASYN primero; conserva contratos heredados solo como fallback compatible. */
+    return (window.IASYN_SEGURIDAD?.configuracion && window.IASYN_SEGURIDAD.configuracion.apiUrl) ||
+      (window.IASYN_SEGURIDAD?.config && window.IASYN_SEGURIDAD.config.apiUrl) ||
+      (typeof IASYN_API_URL!=='undefined' ? IASYN_API_URL : '') ||
       (typeof API_URL!=='undefined' ? API_URL : '') ||
+      (seguridad.configuracion && seguridad.configuracion.apiUrl) ||
       (seguridad.config && seguridad.config.apiUrl) || '';
   }
 
@@ -158,12 +174,12 @@
   }
 
   function gestionarTituloGlobalPreatencion(activo){
-    /* UX QUIRÚRGICA: oculta únicamente el título redundante AUROSANAX del área principal.
+    /* UX QUIRÚRGICA: oculta únicamente el título redundante IASYN/legacy del área principal.
        No toca la marca de la barra lateral ni otros módulos. */
     const candidatos=Array.from(document.querySelectorAll('h1,h2,h3,.page-title,.main-title'));
     candidatos.forEach(el=>{
       if(el.closest('.sidebar')||el.closest('#preatencion')) return;
-      if(norm(el.textContent)!=='aurosanax') return;
+      if(!['iasyn','aurosanax'].includes(norm(el.textContent))) return;
       if(el.dataset.auroPreDisplayOriginal===undefined){
         el.dataset.auroPreDisplayOriginal=el.style.display||'';
       }
@@ -189,7 +205,7 @@
     instalarControlTituloGlobal();
     const menu=document.querySelector('.sidebar .menu');
     if(menu){
-      const btn=document.createElement('button');btn.type='button';btn.dataset.screen='preatencion';btn.dataset.permisoCualquiera='preconsulta,preconsulta_datos_administrativos,preconsulta_signos_vitales,preconsulta_antecedentes_referidos';btn.innerHTML='<i class="bi bi-clipboard2-pulse"></i> Preatención';btn.onclick=async()=>{ if(window.showScreen) window.showScreen('preatencion',btn); gestionarTituloGlobalPreatencion(true); try{ await refrescarReferenciasPreatencion_(); }catch(error){ console.warn('AUROSANAX PREATENCIÓN: no se pudieron refrescar pacientes/citas al entrar.',error); } };
+      const btn=document.createElement('button');btn.type='button';btn.dataset.screen='preatencion';btn.dataset.permisoCualquiera='preconsulta,preconsulta_datos_administrativos,preconsulta_signos_vitales,preconsulta_antecedentes_referidos';btn.innerHTML='<i class="bi bi-clipboard2-pulse"></i> Preatención';btn.onclick=async()=>{ if(window.showScreen) window.showScreen('preatencion',btn); gestionarTituloGlobalPreatencion(true); try{ await refrescarReferenciasPreatencion_(); }catch(error){ console.warn('IASYN PREATENCIÓN: no se pudieron refrescar pacientes/citas al entrar.',error); } };
       const configBtn=menu.querySelector('[data-permiso-cualquiera*="configuracion"]');if(configBtn)menu.insertBefore(btn,configBtn);else menu.appendChild(btn);
     }
     const main=document.querySelector('.main');if(!main)return;
@@ -328,7 +344,7 @@
           await seleccionarPacienteDirecto(d.id_paciente);
         }
       }catch(error){
-        console.warn('AUROSANAX PREATENCIÓN: no se pudo refrescar después de crear paciente.',error);
+        console.warn('IASYN PREATENCIÓN: no se pudo refrescar después de crear paciente.',error);
       }
     });
     ['prePeso','preTalla'].forEach(id=>document.getElementById(id)?.addEventListener('input',calcIMC));
@@ -373,7 +389,7 @@
 
 
   /* ==========================================================
-     AUROSANAX PREATENCIÓN 12
+     IASYN PREATENCIÓN 12
      CREAR PACIENTE DESDE CITA · REUTILIZA MODAL DE SECRETARÍA
      ----------------------------------------------------------
      - No navega al listado general de Pacientes.
@@ -425,7 +441,7 @@
 
   async function refrescarReferenciasPreatencion_(){
     /*
-      AUROSANAX · SINCRONIZACIÓN QUIRÚRGICA
+      IASYN · SINCRONIZACIÓN QUIRÚRGICA
       Alcance exclusivo: referencias de Pacientes y Citas al reingresar.
       - No modifica signos vitales ni antecedentes escritos.
       - No toca edición, permisos, justificativos ni auditoría.
@@ -446,13 +462,13 @@
       if(rp.status==='fulfilled'){
         pacientesCache=extraerLista(rp.value);
       }else{
-        console.warn('AUROSANAX PREATENCIÓN: no se pudieron refrescar pacientes.',rp.reason);
+        console.warn('IASYN PREATENCIÓN: no se pudieron refrescar pacientes.',rp.reason);
       }
 
       if(rc.status==='fulfilled'){
         citasCache=extraerLista(rc.value);
       }else{
-        console.warn('AUROSANAX PREATENCIÓN: no se pudieron refrescar citas.',rc.reason);
+        console.warn('IASYN PREATENCIÓN: no se pudieron refrescar citas.',rc.reason);
       }
 
       renderResultadosPacientes();
@@ -492,7 +508,7 @@
       pacientesCache=listaPacientes;
       renderResultadosPacientes();
     }catch(error){
-      console.error('AUROSANAX PREATENCIÓN: error cargando pacientes',error);
+      console.error('IASYN PREATENCIÓN: error cargando pacientes',error);
       pacientesCache=[];
       const resultados=document.getElementById('preResultadosPaciente');if(resultados)resultados.innerHTML='<div class="pre-empty">No se pudieron leer pacientes.</div>';
       if(resumen) resumen.textContent='No se pudieron leer pacientes.';
@@ -504,7 +520,7 @@
       const respuestaCitas=await get('listarCitas');
       citasCache=extraerLista(respuestaCitas);
     }catch(error){
-      console.warn('AUROSANAX PREATENCIÓN: citas no disponibles; selector de pacientes continúa operativo.',error);
+      console.warn('IASYN PREATENCIÓN: citas no disponibles; selector de pacientes continúa operativo.',error);
       citasCache=[];
     }
 
@@ -512,7 +528,7 @@
       const respuestaPre=await get('listarPreatenciones');
       preatencionesCache=extraerLista(respuestaPre);
     }catch(error){
-      console.warn('AUROSANAX PREATENCIÓN: listado de preatenciones no disponible; guardado y búsqueda por paciente continúan operativos.',error);
+      console.warn('IASYN PREATENCIÓN: listado de preatenciones no disponible; guardado y búsqueda por paciente continúan operativos.',error);
       preatencionesCache=[];
     }
 
@@ -640,7 +656,7 @@
   async function cargarPendiente(){
     limpiarClinico();actualizarContexto();const idPaciente=val('prePaciente'),idCita=val('preCita');if(!idPaciente)return;
     try{const r=await get('buscarPreatencionPendientePorPaciente',{id_paciente:idPaciente,id_cita:idCita,contexto_exacto:'SI'});if(!r||!r.id_preatencion)return;set('prePeso',r.peso_kg);set('preTalla',r.talla_cm);set('preIMC',r.imc);const pa=txt(r.presion_arterial).match(/^(\d{2,3})\/(\d{2,3})$/);set('prePAS',pa?pa[1]:'');set('prePAD',pa?pa[2]:'');set('preFC',r.frecuencia_cardiaca);set('preFR',r.frecuencia_respiratoria);set('preTemp',r.temperatura);set('preSat',r.saturacion);set('preCadera',r.perimetro_cadera);set('preGrasa',r.porcentaje_grasa);set('preMasa',r.masa_muscular);set('preCefalico',r.perimetro_cefalico);set('preToracico',r.perimetro_toracico);set('preAbdominal',r.perimetro_abdominal);set('preAntecedentesTexto',r.antecedentes_referidos);}
-    catch(e){console.warn('AUROSANAX PREATENCIÓN: pendiente',e);}
+    catch(e){console.warn('IASYN PREATENCIÓN: pendiente',e);}
   }
 
   async function guardar(){
@@ -760,7 +776,7 @@
     }
 
     /*
-     * Semántica AUROSANAX:
+     * Semántica IASYN:
      * - tipo_justificativo = categoría normalizada.
      * - motivo = explicación concreta, solo si realmente se escribió.
      * Nunca se repite automáticamente la categoría en motivo.
@@ -944,6 +960,9 @@
     if(!document.getElementById('preatencion'))inyectar();if(!citasCache.length)await cargarTodo();const c=citasCache.find(x=>txt(x.id_cita)===txt(idCita));if(!c){alert('No se encontró la cita.');return;}if(!c.id_paciente){alert('La cita todavía no está vinculada a un paciente. Cree o vincule primero el paciente.');return;}await seleccionarDesdeSala(c.id_paciente,c.id_cita);const btn=document.querySelector('.menu button[data-screen="preatencion"]');if(typeof window.showScreen==='function')window.showScreen('preatencion',btn||null);
   }
 
-  window.AUROSANAX_PREATENCION={abrirDesdeCita,cargarTodo,version:'3.7.0'};
+  const apiPreatencion={abrirDesdeCita,cargarTodo,version:'3.7.0'};
+  window.IASYN_PREATENCION=apiPreatencion;
+  /* Compatibilidad temporal con consumidores heredados. */
+  window.AUROSANAX_PREATENCION=apiPreatencion;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inyectar,{once:true});else setTimeout(inyectar,0);
 })();
