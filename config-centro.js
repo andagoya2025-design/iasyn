@@ -1,3 +1,10 @@
+/*
+ IASYN · CONFIG CENTRO — MONTAJE AUTÓNOMO 2026-09
+ - Expone window.IASYN_CONFIG_CENTRO.init().
+ - Monta el formulario dentro de #configCentroMount.
+ - No modifica pacientes, atenciones, historias ni módulos clínicos.
+ - Conserva acciones backend existentes para configuración y logo.
+*/
 /* ==========================================================
    IASYN ERP DEMO - CONFIG CENTRO JS
    Versión: 2026-07-06
@@ -400,6 +407,149 @@
       }
     }
   }
+
+
+  /* ==========================================================
+     IASYN 2026-09 · MONTAJE AUTÓNOMO DE DATOS DEL CENTRO
+     - Crea únicamente la interfaz dentro de configCentroMount.
+     - No modifica backend ni estructura de la hoja configuracion.
+     - Reutiliza cargarConfiguracionCentro() y guardarConfiguracionCentro().
+     ========================================================== */
+
+  function renderConfigCentroMount_(mount){
+    if(!mount) return false;
+    if(mount.dataset.iasynCentroMontado === '1') return true;
+
+    mount.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold" for="cfgNombreClinica">Nombre del centro</label>
+          <input id="cfgNombreClinica" class="form-control" autocomplete="organization" placeholder="Nombre del centro médico">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold" for="cfgWhatsappClinica">WhatsApp</label>
+          <input id="cfgWhatsappClinica" class="form-control" inputmode="tel" autocomplete="tel" placeholder="Ej. 593999999999">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold" for="cfgEmailClinica">Correo institucional</label>
+          <input id="cfgEmailClinica" type="email" class="form-control" autocomplete="email" placeholder="correo@centro.com">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold" for="cfgDireccionClinica">Dirección</label>
+          <input id="cfgDireccionClinica" class="form-control" autocomplete="street-address" placeholder="Dirección del centro">
+        </div>
+
+        <div class="col-12">
+          <div class="cardx p-3" style="border-radius:18px!important">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-3">
+                <div id="cfgLogoFallback" class="d-grid place-items-center text-muted"
+                     style="min-height:120px;border:1px dashed #e5e7eb;border-radius:16px;background:#fffafd">
+                  <div class="text-center">
+                    <i class="bi bi-image" style="font-size:28px"></i>
+                    <div class="small mt-1">Sin logo</div>
+                  </div>
+                </div>
+                <img id="cfgLogoPreview" alt="Logo del centro"
+                     style="display:none;max-width:100%;max-height:120px;object-fit:contain;margin:auto">
+              </div>
+
+              <div class="col-md-9">
+                <label class="form-label fw-bold" for="cfgLogoFile">Logo institucional</label>
+                <input id="cfgLogoFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp">
+                <div id="cfgLogoFileStatus" class="small text-muted mt-2">PNG, JPG o WEBP · máximo 2 MB.</div>
+
+                <label class="form-label fw-bold mt-3" for="cfgLogoUrl">URL del logo</label>
+                <input id="cfgLogoUrl" class="form-control" placeholder="Se completa al subir el logo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold" for="cfgColorPrincipal">Color principal</label>
+          <input id="cfgColorPrincipal" class="form-control" readonly aria-readonly="true">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold" for="cfgColorSecundario">Color secundario</label>
+          <input id="cfgColorSecundario" class="form-control" readonly aria-readonly="true">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold" for="cfgModoSistema">Modo del sistema</label>
+          <input id="cfgModoSistema" class="form-control" readonly aria-readonly="true">
+        </div>
+
+        <div class="col-12">
+          <div id="centroMsg" class="notice">
+            <i class="bi bi-hourglass-split me-1"></i> Preparando configuración institucional...
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button id="btnGuardarCentro" type="button" class="btn-auro">
+            <i class="bi bi-save me-1"></i> Guardar datos del centro
+          </button>
+        </div>
+      </div>
+    `;
+
+    const btn = mount.querySelector('#btnGuardarCentro');
+    if(btn && btn.dataset.iasynCentroGuardarInit !== '1'){
+      btn.dataset.iasynCentroGuardarInit = '1';
+      btn.addEventListener('click', guardarConfiguracionCentro);
+    }
+
+    const logoUrl = mount.querySelector('#cfgLogoUrl');
+    if(logoUrl && logoUrl.dataset.iasynLogoUrlInit !== '1'){
+      logoUrl.dataset.iasynLogoUrlInit = '1';
+      logoUrl.addEventListener('input', actualizarPreviewLogoCentro);
+      logoUrl.addEventListener('change', actualizarPreviewLogoCentro);
+    }
+
+    mount.dataset.iasynCentroMontado = '1';
+    inicializarLogoUploaderCentro();
+    return true;
+  }
+
+  async function initConfiguracionCentroIASYN_(opciones){
+    const opts = opciones || {};
+    const mountId = String(opts.mountId || 'configCentroMount').trim();
+    const mount = document.getElementById(mountId);
+
+    if(!mount){
+      console.warn('IASYN Config Centro: no existe el contenedor #' + mountId);
+      return {success:false, message:'No existe el contenedor de Datos del centro.'};
+    }
+
+    renderConfigCentroMount_(mount);
+
+    try{
+      await cargarConfiguracionCentro();
+      return {success:true};
+    }catch(error){
+      console.error('IASYN Config Centro - init:', error);
+      return {success:false, message:String(error && error.message || error || 'Error cargando configuración del centro.')};
+    }
+  }
+
+  const IASYN_CONFIG_CENTRO_API = Object.freeze({
+    init: initConfiguracionCentroIASYN_,
+    cargar: cargarConfiguracionCentro,
+    guardar: guardarConfiguracionCentro,
+    montar: function(mountId){
+      return renderConfigCentroMount_(document.getElementById(mountId || 'configCentroMount'));
+    },
+    actualizarPreviewLogo: actualizarPreviewLogoCentro
+  });
+
+  window.IASYN_CONFIG_CENTRO = IASYN_CONFIG_CENTRO_API;
+  /* Compatibilidad temporal con configuracion.html heredado. */
+  window.AUROSANAX_CONFIG_CENTRO = IASYN_CONFIG_CENTRO_API;
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', inicializarLogoUploaderCentro);
