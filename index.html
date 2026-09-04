@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
-  <title id="auroTituloDocumento">AUROSANAX Clinical ERP</title>
+  <title id="auroTituloDocumento">IASYN Clinical ERP</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -3676,11 +3676,22 @@
 
   function existeSesionLocalVigente(){
     try{
-      const token = sessionStorage.getItem('aurosanax_seguridad_token') || '';
-      const sesion = sessionStorage.getItem('aurosanax_seguridad_sesion') || '';
-      const usuario = sessionStorage.getItem('aurosanax_seguridad_usuario') || '';
+      const token =
+        sessionStorage.getItem('iasyn_seguridad_token') ||
+        sessionStorage.getItem('aurosanax_seguridad_token') ||
+        '';
+      const sesion =
+        sessionStorage.getItem('iasyn_seguridad_sesion') ||
+        sessionStorage.getItem('aurosanax_seguridad_sesion') ||
+        '';
+      const usuario =
+        sessionStorage.getItem('iasyn_seguridad_usuario') ||
+        sessionStorage.getItem('aurosanax_seguridad_usuario') ||
+        '';
       const expiraEn = Number(
-        sessionStorage.getItem('aurosanax_seguridad_expira_en') || 0
+        sessionStorage.getItem('iasyn_seguridad_expira_en') ||
+        sessionStorage.getItem('aurosanax_seguridad_expira_en') ||
+        0
       );
 
       if(!token || !sesion || !usuario) return false;
@@ -3715,9 +3726,9 @@
   <aside class="sidebar" id="sidebar">
     <button type="button" class="auro-sidebar-close" onclick="toggleSidebar()" aria-label="Cerrar menú" title="Cerrar menú"><i class="bi bi-x-lg"></i></button>
     <div class="brand">
-      <div class="brand-logo">A</div>
+      <div class="brand-logo">I</div>
       <div>
-        <h1 id="auroNombreCentroSidebar">AUROSANAX</h1>
+        <h1 id="auroNombreCentroSidebar">IASYN</h1>
         <small id="auroSubtituloSistema">Clinical ERP</small>
       </div>
     </div>
@@ -3802,7 +3813,7 @@
       <div>
         <button class="btn-soft mobile-menu mb-2" onclick="toggleSidebar()"><i class="bi bi-list"></i> Menú</button>
         <h2 id="screenTitle">Dashboard</h2>
-        <p id="screenSubtitle">Resumen general del centro médico AUROSANAX</p>
+        <p id="screenSubtitle">Resumen general del centro médico IASYN</p>
       </div>
       <div class="doctor-pill" id="auroUsuarioDesktop">
         <div class="doctor-avatar" id="auroUsuarioAvatar">AU</div>
@@ -3825,7 +3836,7 @@
     <section class="screen active" id="dashboard">
       <div class="hero">
         <div>
-          <h3 id="auroBienvenidaCentro">Bienvenida a AUROSANAX Clinical ERP</h3>
+          <h3 id="auroBienvenidaCentro">Bienvenida a IASYN Clinical ERP</h3>
           <p>Plataforma clínica integral para la gestión de pacientes, agenda, historias clínicas, especialidades y seguimiento médico.</p>
         </div>
         <div class="quick-actions">
@@ -3875,7 +3886,7 @@
               <button class="btn-soft text-start" onclick="showScreen('pacientes')"><i class="bi bi-search me-2"></i> Buscar paciente</button>
               <button class="btn-soft text-start" onclick="showScreen('historia'); setTimeout(openHistoriasModal, 150)"><i class="bi bi-file-earmark-medical me-2"></i> Buscar historia clínica</button>
               <button class="btn-soft text-start" onclick="showScreen('procedimientos')"><i class="bi bi-clipboard2-pulse me-2"></i> Procedimientos</button>
-              <button class="btn-soft text-start" onclick="abrirWhatsAppConsultorio()"><i class="bi bi-whatsapp me-2"></i> WhatsApp <span class="auroNombreCentroWhatsapp">AUROSANAX</span></button>
+              <button class="btn-soft text-start" onclick="abrirWhatsAppConsultorio()"><i class="bi bi-whatsapp me-2"></i> WhatsApp <span class="auroNombreCentroWhatsapp">IASYN</span></button>
             </div>
           </div>
         </div>
@@ -4015,7 +4026,7 @@
             <h5 id="hcCardNombre">Seleccione un paciente</h5>
             <div class="patient-tags">
               <span class="badge-auro" id="hcCardEstado">Historia activa</span>
-              <span class="badge-auro badge-blue" id="hcCardServicio">AUROSANAX</span>
+              <span class="badge-auro badge-blue" id="hcCardServicio">IASYN</span>
             </div>
             <div class="text-muted mt-2" id="hcCardDetalle">Los datos clínicos aparecerán aquí al elegir un paciente registrado.</div>
           </div>
@@ -4579,8 +4590,8 @@
         <div class="clinical-note mt-3"><i class="bi bi-info-circle me-1"></i> La receta vuelve al modelo simple: <b>una receta = una fila</b>. El detalle completo de medicamentos se guarda en la columna <b>medicamento</b> de la pestaña recetas para evitar múltiples filas por cada medicamento.</div>
       </div>
     </section>
-    <section class="screen" id="seguimiento"><div class="cardx p-4"><h4 class="fw-bold">Seguimiento por WhatsApp</h4><p class="text-muted">Recordatorios, controles, postprocedimientos y mensajes rápidos.</p><button class="btn-auro" onclick="abrirWhatsAppConsultorio()"><i class="bi bi-whatsapp me-1"></i> WhatsApp <span class="auroNombreCentroWhatsapp">AUROSANAX</span></button></div></section>
-    <section class="screen" id="medicos"><div class="cardx p-4"><h4 class="fw-bold">Médicos y personal</h4><p class="text-muted">Dra. Aurora como administradora principal y otros médicos por especialidad.</p></div></section>
+    <section class="screen" id="seguimiento"><div class="cardx p-4"><h4 class="fw-bold">Seguimiento por WhatsApp</h4><p class="text-muted">Recordatorios, controles, postprocedimientos y mensajes rápidos.</p><button class="btn-auro" onclick="abrirWhatsAppConsultorio()"><i class="bi bi-whatsapp me-1"></i> WhatsApp <span class="auroNombreCentroWhatsapp">IASYN</span></button></div></section>
+    <section class="screen" id="medicos"><div class="cardx p-4"><h4 class="fw-bold">Médicos y personal</h4><p class="text-muted">Administración del equipo médico y personal por especialidad.</p></div></section>
     <section class="screen" id="configuracion">
       <div class="cardx p-4">
         <h4 class="fw-bold">Configuración del sistema</h4>
@@ -4744,7 +4755,7 @@ function auroUrlsLogoSidebar(url, fileId, version){
 function auroRestaurarLogoSidebar(){
   const logo = document.querySelector('.brand-logo');
   if(!logo) return;
-  logo.innerHTML = 'A';
+  logo.innerHTML = 'I';
   logo.removeAttribute('title');
 }
 
@@ -4760,7 +4771,7 @@ function auroPintarLogoSidebarDesdeUrls(urls){
 
   let intento = 0;
   const img = new Image();
-  img.alt = 'Logo AUROSANAX';
+  img.alt = 'Logo institucional';
   img.referrerPolicy = 'no-referrer';
   img.style.width = '100%';
   img.style.height = '100%';
@@ -4780,13 +4791,54 @@ function auroPintarLogoSidebarDesdeUrls(urls){
       img.src = lista[intento];
     }else{
       auroRestaurarLogoSidebar();
-      console.warn('AUROSANAX: no se pudo cargar el logo del menú lateral. Se conserva la letra A.');
+      console.warn('IASYN: no se pudo cargar el logo del menú lateral. Se conserva el identificador institucional.');
     }
   };
 
   img.src = lista[intento];
 }
 
+
+const IASYN_INDEX_RECURSOS_LEGACY_BLOQUEADOS = Object.freeze([
+  '1SkTFM2SDl0G0z4pe-JFWFGE3TykoNI3v',
+  '1-4DR5Z8BndQrILMlsE8QA7khhUFyvUGV',
+  '1z5qIQuEEWW5A73uMAEDlGPHeu7EVE3Uj'
+]);
+
+function iasynIndexContieneRecursoLegacy_(valor){
+  const txt = String(valor === null || valor === undefined ? '' : valor).trim();
+  if(!txt) return false;
+  return IASYN_INDEX_RECURSOS_LEGACY_BLOQUEADOS.some(id => txt.includes(id));
+}
+
+function iasynIndexSanitizarConfiguracionCentro_(cfg){
+  const limpio = cfg && typeof cfg === 'object' && !Array.isArray(cfg) ? {...cfg} : {};
+  [
+    'nombre_clinica','nombre_centro','nombre_comercial','razon_social',
+    'subtitulo_clinica','descripcion_clinica','eslogan_clinica',
+    'pie_institucional','pie_pagina','texto_pie'
+  ].forEach(clave => {
+    if(/aurosanax/i.test(String(limpio[clave] || ''))) limpio[clave] = '';
+  });
+
+  const email = String(limpio.email_clinica || '').trim().toLowerCase();
+  if(email === 'dra_aurora_andagoya@hotmail.com' || email === 'aurosanax@hotmail.com'){
+    limpio.email_clinica = '';
+  }
+
+  const direccion = String(limpio.direccion_clinica || '')
+    .trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(direccion === 'edificio agora 21 piso 6') limpio.direccion_clinica = '';
+
+  [
+    'logo_url','logo_drive_url','logo_file_id',
+    'drive_logos_folder_id','drive_logos_folder_url',
+    'drive_documentos_clinicos_folder_id','drive_documentos_clinicos_folder_url'
+  ].forEach(clave => {
+    if(iasynIndexContieneRecursoLegacy_(limpio[clave])) limpio[clave] = '';
+  });
+  return limpio;
+}
 
 function auroAplicarIdentidadCentroIndex(cfg){
   cfg = cfg && typeof cfg === 'object' && !Array.isArray(cfg) ? cfg : {};
@@ -4795,8 +4847,8 @@ function auroAplicarIdentidadCentroIndex(cfg){
     cfg.nombre_clinica ||
     cfg.nombre_centro ||
     cfg.razon_social ||
-    'AUROSANAX'
-  ).trim() || 'AUROSANAX';
+    'IASYN'
+  ).trim() || 'IASYN';
 
   const nombreSidebar = document.getElementById('auroNombreCentroSidebar');
   const bienvenida = document.getElementById('auroBienvenidaCentro');
@@ -4836,12 +4888,13 @@ async function auroCargarLogoSidebarInstitucional(){
     const res = await fetch(api + '?accion=obtenerConfiguracion&t=' + Date.now());
     if(!res.ok) throw new Error('HTTP ' + res.status);
 
-    const cfg = await res.json();
-    if(!cfg || typeof cfg !== 'object' || Array.isArray(cfg)){
+    const cfgRaw = await res.json();
+    if(!cfgRaw || typeof cfgRaw !== 'object' || Array.isArray(cfgRaw)){
       auroRestaurarLogoSidebar();
       return;
     }
 
+    const cfg = iasynIndexSanitizarConfiguracionCentro_(cfgRaw);
     window.auroConfiguracionCentro = cfg;
     auroAplicarIdentidadCentroIndex(cfg);
 
@@ -4856,7 +4909,7 @@ async function auroCargarLogoSidebarInstitucional(){
 
     auroPintarLogoSidebarDesdeUrls(auroUrlsLogoSidebar(logoUrl, logoFileId, version));
   }catch(error){
-    console.warn('AUROSANAX: error cargando logo institucional del sidebar.', error);
+    console.warn('IASYN: error cargando logo institucional del sidebar.', error);
     auroRestaurarLogoSidebar();
   }
 }
@@ -5193,7 +5246,7 @@ function actualizarTarjetaPacienteHistoria(paciente){
   setTextIfExists('hcAvatar', iniciales || 'A');
   setTextIfExists('hcCardNombre', nombre);
   setTextIfExists('hcCardEstado', paciente ? (paciente.estado || 'Paciente activo') : 'Historia activa');
-  setTextIfExists('hcCardServicio', paciente ? (paciente.servicio || 'Ginecología') : 'AUROSANAX');
+  setTextIfExists('hcCardServicio', paciente ? (paciente.servicio || 'Ginecología') : 'IASYN');
   setTextIfExists('hcCardCedula', paciente?.cedula || '—');
   setTextIfExists('hcCardNacimiento', fechaNacimiento ? formatearFechaVisual(fechaNacimiento) : '—');
   setTextIfExists('hcCardEdad', edad === '—' ? '—' : edad + ' años');
@@ -5220,7 +5273,7 @@ function showScreen(id, btn){
   if(btn) btn.classList.add('active');
 
   const titles={
-    dashboard:['Dashboard','Resumen general del centro médico ' + (window.auroNombreCentro || 'AUROSANAX')],
+    dashboard:['Dashboard','Resumen general del centro médico ' + (window.auroNombreCentro || 'IASYN')],
     pacientes:['Pacientes','Registro, búsqueda y seguimiento de pacientes'],
     agenda:['Agenda médica','Citas por médico y especialidad'],
     historia:['Historia clínica','Datos generales'],
@@ -5235,7 +5288,7 @@ function showScreen(id, btn){
     medicos:['Médicos','Equipo médico y roles'],
     configuracion:['Configuración','Integración con base de datos clínica']
   };
-  document.getElementById('screenTitle').textContent=titles[id]?.[0] || 'AUROSANAX';
+  document.getElementById('screenTitle').textContent=titles[id]?.[0] || 'IASYN';
   document.getElementById('screenSubtitle').textContent=titles[id]?.[1] || '';
   document.getElementById('sidebar').classList.remove('show');
   if(id === 'agenda') cargarCitasAgendaWeb();
@@ -9040,16 +9093,7 @@ async function guardarHistoriaClinicaERP(){
   }
 }
 
-const WHATSAPP_AUROSANAX = '593984567660';
-
-
-/* AUROSANAX: función normalizarTelefonoEcuador movida a pacientes.js */
-
-
-/* AUROSANAX: función abrirWhatsApp movida a pacientes.js */
-
-
-/* AUROSANAX: función abrirWhatsAppPaciente movida a pacientes.js */
+/* Compatibilidad: las funciones públicas de WhatsApp permanecen sin cambios. */
 
 function abrirWhatsAppHistoria(){
   const idPaciente = document.getElementById('hcPacienteSelect')?.value || '';
@@ -9061,8 +9105,26 @@ function abrirWhatsAppHistoria(){
 }
 
 function abrirWhatsAppConsultorio(){
-  const mensaje = 'Hola, gracias por contactarse con AUROSANAX. ¿En qué podemos ayudarle hoy?';
-  abrirWhatsApp(WHATSAPP_AUROSANAX, mensaje);
+  const cfg = window.auroConfiguracionCentro && typeof window.auroConfiguracionCentro === 'object'
+    ? window.auroConfiguracionCentro
+    : {};
+
+  const telefono = String(
+    cfg.whatsapp_clinica ||
+    cfg.telefono_clinica ||
+    cfg.whatsapp ||
+    cfg.telefono ||
+    ''
+  ).trim();
+
+  if(!telefono){
+    alert('Configure el WhatsApp del centro en Configuración > Datos del centro.');
+    return;
+  }
+
+  const nombre = String(window.auroNombreCentro || cfg.nombre_clinica || 'IASYN').trim() || 'IASYN';
+  const mensaje = 'Hola, gracias por contactarse con ' + nombre + '. ¿En qué podemos ayudarle hoy?';
+  abrirWhatsApp(telefono, mensaje);
 }
 
 function auroInformeEscape(valor){
@@ -9465,8 +9527,8 @@ function imprimirHistoriaClinica(){
     cfgCentroPDF.nombre_centro ||
     cfgCentroPDF.nombre_comercial ||
     cfgCentroPDF.razon_social ||
-    'AUROSANAX'
-  ).trim() || 'AUROSANAX';
+    'IASYN'
+  ).trim() || 'IASYN';
   const subtituloCentroPDF = String(
     cfgCentroPDF.subtitulo_clinica ||
     cfgCentroPDF.descripcion_clinica ||
@@ -9474,7 +9536,7 @@ function imprimirHistoriaClinica(){
     'Clinical ERP'
   ).trim();
   const direccionCentroPDF = String(cfgCentroPDF.direccion_clinica || cfgCentroPDF.direccion || '').trim();
-  const ciudadCentroPDF = String(cfgCentroPDF.ciudad_clinica || cfgCentroPDF.ciudad || 'Guayaquil').trim();
+  const ciudadCentroPDF = String(cfgCentroPDF.ciudad_clinica || cfgCentroPDF.ciudad || '').trim();
   const telefonoCentroPDF = String(
     cfgCentroPDF.telefono_clinica ||
     cfgCentroPDF.whatsapp_clinica ||
@@ -10308,7 +10370,7 @@ function imprimirHistoriaClinica(){
     <footer class="auro-footer">
       <div>
         <strong>${auroInformeEscape(nombreCentroPDF)}</strong>
-        ${pieInstitucionalPDF || 'Documento clínico generado desde AUROSANAX Clinical ERP.'}
+        ${pieInstitucionalPDF || ('Documento clínico generado desde ' + auroInformeEscape(nombreCentroPDF) + ' Clinical ERP.')}
       </div>
       <div class="auro-footer-right">
         ${medicoAtencionPDF ? `<strong>${auroInformeEscape(medicoAtencionPDF)}</strong>` : ''}
@@ -11075,7 +11137,7 @@ document.addEventListener('click',e=>{
       <html lang="es">
       <head>
         <meta charset="UTF-8">
-        <title>Consentimiento informado AUROSANAX</title>
+        <title>Consentimiento informado ${auroInformeEscape(window.auroNombreCentro || 'IASYN')}</title>
         <style>
           body{font-family:Arial,sans-serif;margin:40px;color:#111827;line-height:1.55}
           h2,h3{text-align:center}
@@ -12353,7 +12415,7 @@ document.addEventListener('click',e=>{
 
 
 <!-- AUROSANAX FASE 4: protección de acceso del ERP -->
-<script src="seguridad.js?v=20260824_1"></script>
+<script src="seguridad.js?v=20260904-R5-AUTONOMO"></script>
 <script id="auro-seguridad-index-guard">
 (function(){
   'use strict';
@@ -12430,7 +12492,7 @@ document.addEventListener('click',e=>{
   }
 
   async function cerrarSesionDesdeIndex(){
-    const seguridad = window.AUROSANAX_SEGURIDAD;
+    const seguridad = window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD;
 
     try{
       if(seguridad && typeof seguridad.cerrarSesion === 'function'){
@@ -12438,21 +12500,27 @@ document.addEventListener('click',e=>{
         return;
       }
     }catch(error){
-      console.warn('AUROSANAX: cierre de sesión no confirmado:', error);
+      console.warn('IASYN: cierre de sesión no confirmado:', error);
     }
 
     try{
+      sessionStorage.removeItem('iasyn_seguridad_token');
+      sessionStorage.removeItem('iasyn_seguridad_sesion');
+      sessionStorage.removeItem('iasyn_seguridad_usuario');
+      sessionStorage.removeItem('iasyn_seguridad_expira_en');
+      sessionStorage.removeItem('iasyn_seguridad_ultima_validacion');
       sessionStorage.removeItem('aurosanax_seguridad_token');
       sessionStorage.removeItem('aurosanax_seguridad_sesion');
       sessionStorage.removeItem('aurosanax_seguridad_usuario');
       sessionStorage.removeItem('aurosanax_seguridad_expira_en');
+      sessionStorage.removeItem('aurosanax_seguridad_ultima_validacion');
     }catch(e){}
 
     window.location.replace(PAGINA_LOGIN);
   }
 
   async function validarAccesoErp(){
-    const seguridad = window.AUROSANAX_SEGURIDAD;
+    const seguridad = window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD;
 
     if(!seguridad || typeof seguridad.validarSesionActual !== 'function'){
       bloquearYVolverLogin('No se pudo cargar el módulo de seguridad.');
@@ -12514,7 +12582,7 @@ document.addEventListener('click',e=>{
 
       await window.auroIniciarERPTrasSeguridad();
     }catch(error){
-      console.error('AUROSANAX: error validando sesión del ERP:', error);
+      console.error('IASYN: error validando sesión del ERP:', error);
       bloquearYVolverLogin('No fue posible validar la sesión.');
     }
   }
@@ -12543,7 +12611,7 @@ document.addEventListener('click',e=>{
   window.addEventListener('pageshow', function(event){
     if(!event.persisted) return;
 
-    const seguridad = window.AUROSANAX_SEGURIDAD;
+    const seguridad = window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD;
     const usuario = seguridad &&
       typeof seguridad.obtenerUsuario === 'function'
         ? seguridad.obtenerUsuario()
