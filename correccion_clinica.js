@@ -1,7 +1,14 @@
 /*
-AUROSANAX Clinical ERP
+IASYN - AISLAMIENTO
+- Módulo exclusivamente visual/ortográfico.
+- No guarda ni modifica información clínica.
+- No usa Apps Script, Google Sheets, Drive ni endpoints externos.
+- No reemplaza términos médicos automáticamente.
+*/
+/*
+IASYN Clinical ERP
 Archivo: correccion_clinica.js
-PRUEBA CONTROLADA - ANAMNESIS
+AYUDA ORTOGRÁFICA CONTROLADA - ANAMNESIS
 
 Objetivo:
 - Activar ayudas ortográficas nativas del navegador en campos narrativos.
@@ -35,8 +42,8 @@ Objetivo:
   }
 
   function configurar(campo){
-    if(!campoPermitido(campo) || campo.dataset.auroCorreccionClinica === '1') return;
-    campo.dataset.auroCorreccionClinica = '1';
+    if(!campoPermitido(campo) || campo.dataset.iasynCorreccionClinica === '1') return;
+    campo.dataset.iasynCorreccionClinica = '1';
     campo.setAttribute('lang','es-EC');
     campo.setAttribute('spellcheck','true');
     campo.setAttribute('autocapitalize','sentences');
