@@ -16,6 +16,14 @@
  - Presentar los eventos más recientes primero sin alterar la fuente persistida.
 ************************************************************************/
 
+/*
+ AISLAMIENTO IASYN
+ - Sin URLs, Spreadsheet IDs ni Drive IDs directos.
+ - Seguridad y endpoint IASYN tienen prioridad.
+ - La auditoría no modifica registros clínicos: consulta eventos y solo guarda
+   la configuración administrativa de la ventana de corrección.
+ - Los nombres CSS auro-* se conservan porque son contratos visuales internos.
+*/
 (function(){
   'use strict';
 
@@ -51,13 +59,19 @@
 
   function apiUrl(){
     try{
+      if(typeof IASYN_API_URL !== 'undefined' && IASYN_API_URL) return texto(IASYN_API_URL);
+    }catch(_e){}
+    if(window.IASYN_SEGURIDAD?.configuracion?.apiUrl) return texto(window.IASYN_SEGURIDAD.configuracion.apiUrl);
+    if(window.IASYN_SEGURIDAD?.config?.apiUrl) return texto(window.IASYN_SEGURIDAD.config.apiUrl);
+    try{
       if(typeof API_URL !== 'undefined' && API_URL) return texto(API_URL);
     }catch(_e){}
     return texto(window.API_URL || '');
   }
 
   function seguridad(){
-    return window.AUROSANAX_SEGURIDAD || null;
+    /* IASYN primero; alias AUROSANAX solo como compatibilidad temporal. */
+    return window.IASYN_SEGURIDAD || window.AUROSANAX_SEGURIDAD || null;
   }
 
   function usuarioActual(){
@@ -78,9 +92,9 @@
   }
 
   function instalarEstilos(){
-    if(document.getElementById('auroAuditoriaClinicaStyles')) return;
+    if(document.getElementById('iasynAuditoriaClinicaStyles') || document.getElementById('auroAuditoriaClinicaStyles')) return;
     const style = document.createElement('style');
-    style.id = 'auroAuditoriaClinicaStyles';
+    style.id = 'iasynAuditoriaClinicaStyles';
     style.textContent = `
       #securityAuditoriaClinica .auro-audit-badge{
         display:inline-flex;align-items:center;justify-content:center;
@@ -369,7 +383,7 @@
             <td><span class="auro-audit-badge auro-audit-action">${escapar(nombreAccion(e.accion))}</span></td>
             <td>${actorHTML(e)}</td>
             <td>${ventanaHTML(e)}</td>
-            <td><button type="button" class="btn-line btn-sm auro-audit-detail-btn" onclick="window.auroAuditoriaClinica.verDetalle(${index})" title="Ver detalle"><i class="bi bi-search"></i></button></td>
+            <td><button type="button" class="btn-line btn-sm auro-audit-detail-btn" onclick="window.IASYN_AUDITORIA_CLINICA.verDetalle(${index})" title="Ver detalle"><i class="bi bi-search"></i></button></td>
           </tr>`;
       }).join('');
     }
@@ -384,7 +398,7 @@
             <div class="line"><span>Consulta</span><span>${escapar(e.numero_consulta || '—')}</span></div>
             <div class="line"><span>Médico / usuario</span><span>${escapar(e.nombre_medico || e.usuario || '—')}</span></div>
             <div class="line"><span>Ventana</span><span>${ventanaHTML(e)}</span></div>
-            <button type="button" class="btn-line w-100 mt-2" onclick="window.auroAuditoriaClinica.verDetalle(${index})"><i class="bi bi-search me-1"></i> Ver detalle</button>
+            <button type="button" class="btn-line w-100 mt-2" onclick="window.IASYN_AUDITORIA_CLINICA.verDetalle(${index})"><i class="bi bi-search me-1"></i> Ver detalle</button>
           </div>`;
       }).join('');
     }
@@ -672,7 +686,7 @@
     });
   }
 
-  window.auroAuditoriaClinica = {
+  const apiAuditoriaClinica = {
     preparar: preparar,
     cargar: cargar,
     render: render,
@@ -681,6 +695,10 @@
     cargarConfiguracionControl: cargarConfiguracionControl,
     guardarConfiguracionControl: guardarConfiguracionControl
   };
+
+  window.IASYN_AUDITORIA_CLINICA = apiAuditoriaClinica;
+  /* Compatibilidad temporal con HTML/módulos heredados. */
+  window.auroAuditoriaClinica = apiAuditoriaClinica;
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', function(){ setTimeout(preparar, 0); });
