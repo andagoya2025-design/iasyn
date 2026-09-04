@@ -1,10 +1,3 @@
-<!--
- IASYN · CONFIGURACIÓN — CORRECCIÓN QUIRÚRGICA 2026-09
- - Servicios: acepta nombre_servicio/nombre/servicio sin perder compatibilidad.
- - Plantillas: muestra un nombre descriptivo; no crea columnas nuevas en Sheets.
- - No modifica IDs, relaciones, precios, médicos, citas ni datos clínicos.
- - IASYN tiene prioridad en aliases de Configuración Centro y Auditoría.
--->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1675,20 +1668,352 @@
     </section>
 
     <section class="screen" id="horarios">
-      <div class="cardx p-3"><div class="section-head"><div><h4>Plantillas de horario</h4><p>Configura horarios repetitivos por médico y día de la semana.</p></div><button class="btn-auro" onclick="abrirHorario()"><i class="bi bi-plus-circle me-1"></i> Nueva plantilla</button></div><div class="notice mb-3"><i class="bi bi-info-circle me-1"></i> Estas plantillas sirven como base para generar disponibilidad. No crean citas automáticamente.</div><div class="table-responsive"><table class="table table-modern"><thead><tr><th>Plantilla</th><th>Médico</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Duración</th><th>Intervalo</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="horariosBody"></tbody></table></div><div class="mobile-cards" id="horariosMobile"></div></div>
+      <div class="cardx p-3"><div class="section-head"><div><h4>Plantillas de horario</h4><p>Configura horarios repetitivos por médico y día de la semana.</p></div><button class="btn-auro" onclick="abrirHorario()"><i class="bi bi-plus-circle me-1"></i> Nueva plantilla</button></div><div class="notice mb-3"><i class="bi bi-info-circle me-1"></i> Estas plantillas sirven como base para generar disponibilidad. No crean citas automáticamente.</div><div class="table-responsive"><table class="table table-modern"><thead><tr><th>Médico</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Duración</th><th>Intervalo</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="horariosBody"></tbody></table></div><div class="mobile-cards" id="horariosMobile"></div></div>
     </section>
 
     <section class="screen" id="centro">
       <div class="cardx p-3">
-        <div class="section-head"><div><h4>Datos del centro</h4><p>Identidad institucional, contacto y datos usados en documentos y cabeceras.</p></div></div>
-        <div id="configCentroMount"><div class="notice"><i class="bi bi-hourglass-split me-1"></i> Cargando módulo de datos del centro...</div></div>
+        <div class="section-head">
+          <div>
+            <h4>Datos del centro</h4>
+            <p>Identidad institucional, contacto y datos usados en documentos y cabeceras.</p>
+          </div>
+        </div>
+
+        <div id="centroMsg" class="notice mb-3">
+          <i class="bi bi-info-circle me-1"></i> Cargando datos institucionales...
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold" for="cfgNombreClinica">Nombre del centro</label>
+            <input id="cfgNombreClinica" class="form-control" placeholder="Ej. IASYN">
+            <div class="text-muted small mt-1">Se usa como nombre visible institucional del sistema.</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold" for="cfgWhatsappClinica">WhatsApp principal</label>
+            <input id="cfgWhatsappClinica" class="form-control" inputmode="tel" placeholder="Ej. 0999999999">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold" for="cfgEmailClinica">Correo institucional</label>
+            <input id="cfgEmailClinica" type="email" class="form-control" placeholder="correo@centro.com">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold" for="cfgDireccionClinica">Dirección</label>
+            <input id="cfgDireccionClinica" class="form-control" placeholder="Dirección del centro">
+          </div>
+
+          <div class="col-12">
+            <div class="cardx p-3" style="border-radius:18px!important">
+              <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                  <div id="cfgLogoFallback" class="d-grid text-center align-items-center text-muted"
+                       style="min-height:120px;border:1px dashed #e5e7eb;border-radius:16px;background:#fffafd">
+                    <div>
+                      <i class="bi bi-image" style="font-size:28px"></i>
+                      <div class="small mt-1">Sin logo</div>
+                    </div>
+                  </div>
+                  <img id="cfgLogoPreview" alt="Logo del centro"
+                       style="display:none;max-width:100%;max-height:120px;object-fit:contain;margin:auto">
+                </div>
+
+                <div class="col-md-9">
+                  <label class="form-label fw-bold" for="cfgLogoFile">Logo institucional</label>
+                  <input id="cfgLogoFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp">
+                  <div id="cfgLogoFileStatus" class="text-muted small mt-1">PNG, JPG o WEBP · máximo 2 MB.</div>
+
+                  <label class="form-label fw-bold mt-3" for="cfgLogoUrl">URL del logo</label>
+                  <input id="cfgLogoUrl" class="form-control" placeholder="URL del logo almacenado">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold" for="cfgColorPrincipal">Color principal</label>
+            <input id="cfgColorPrincipal" class="form-control" readonly aria-readonly="true">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold" for="cfgColorSecundario">Color secundario</label>
+            <input id="cfgColorSecundario" class="form-control" readonly aria-readonly="true">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold" for="cfgModoSistema">Modo del sistema</label>
+            <input id="cfgModoSistema" class="form-control" readonly aria-readonly="true">
+          </div>
+
+          <div class="col-12 d-flex justify-content-end">
+            <button id="btnGuardarCentro" type="button" class="btn-auro" onclick="guardarConfiguracionCentro()">
+              <i class="bi bi-save me-1"></i> Guardar datos del centro
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="screen" id="finanzas">
       <div class="cardx p-3">
-        <div class="section-head"><div><h4>Finanzas</h4><p>Parámetros administrativos y financieros del centro.</p></div></div>
-        <div id="configFinanzasMount"><div class="notice"><i class="bi bi-hourglass-split me-1"></i> Cargando módulo financiero...</div></div>
+        <div class="section-head">
+          <div>
+            <h4>Finanzas</h4>
+            <p>Parámetros administrativos, gastos fijos, configuración económica de médicos y resumen mensual.</p>
+          </div>
+        </div>
+
+        <div class="security-card mb-3">
+          <div class="security-card-head">
+            <div>
+              <h5>Parámetros financieros</h5>
+              <p>Configuración general usada por Caja y reportes financieros.</p>
+            </div>
+          </div>
+
+          <div id="finanzasConfigMsg" class="notice mb-3">
+            <i class="bi bi-info-circle me-1"></i> Cargando configuración financiera...
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinMoneda">Moneda</label>
+              <select id="cfgFinMoneda" class="form-select">
+                <option value="USD">USD - Dólar estadounidense</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinMetaMensual">Meta mensual</label>
+              <input id="cfgFinMetaMensual" type="number" min="0" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinHorasFacturables">Horas facturables / mes</label>
+              <input id="cfgFinHorasFacturables" type="number" min="0" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinMargenMinimo">Margen mínimo (%)</label>
+              <input id="cfgFinMargenMinimo" type="number" min="0" max="100" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinPorcentajeReferido">% referido predeterminado</label>
+              <input id="cfgFinPorcentajeReferido" type="number" min="0" max="100" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="cfgFinDiasCartera">Días vencimiento cartera</label>
+              <input id="cfgFinDiasCartera" type="number" min="0" step="1" class="form-control">
+            </div>
+            <div class="col-12 d-flex justify-content-end">
+              <button id="btnGuardarConfigFinanzas" type="button" class="btn-auro">
+                <i class="bi bi-save me-1"></i> Guardar parámetros
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-card mb-3">
+          <div class="security-card-head">
+            <div>
+              <h5>Gastos fijos</h5>
+              <p>Registra costos recurrentes administrativos y operativos.</p>
+            </div>
+            <button id="btnCargarBaseGastosFinanzas" type="button" class="btn-line">
+              <i class="bi bi-database-add me-1"></i> Cargar gastos base
+            </button>
+          </div>
+
+          <div id="finanzasGastosMsg" class="notice mb-3">
+            <i class="bi bi-info-circle me-1"></i> Cargando gastos...
+          </div>
+
+          <input id="finGastoId" type="hidden">
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold" for="finGastoNombre">Gasto</label>
+              <select id="finGastoNombre" class="form-select">
+                <option value="">Seleccione</option>
+                <option>Alquiler</option><option>Luz</option><option>Agua</option><option>Internet</option>
+                <option>Mantenimiento de aire</option><option>Permiso de funcionamiento</option>
+                <option>Bomberos</option><option>Patente</option><option>Tasa de Habilitación</option>
+                <option>Publicidad</option><option>Contabilidad</option><option>Software</option>
+                <option value="__OTRO__">Otro</option>
+              </select>
+              <input id="finGastoNombreOtro" class="form-control mt-2 d-none" placeholder="Especifique el gasto">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-bold" for="finGastoCategoria">Categoría</label>
+              <select id="finGastoCategoria" class="form-select">
+                <option value="">Seleccione</option>
+                <option>Infraestructura</option><option>Servicios básicos</option><option>Mantenimiento</option>
+                <option>Permisos e impuestos</option><option>Marketing/Publicidad</option>
+                <option>Administración</option><option>Tecnología</option><option>Personal</option>
+                <option value="__OTRO__">Otra</option>
+              </select>
+              <input id="finGastoCategoriaOtro" class="form-control mt-2 d-none" placeholder="Especifique la categoría">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label fw-bold" for="finGastoValor">Valor</label>
+              <input id="finGastoValor" type="number" min="0" step="0.01" class="form-control">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label fw-bold" for="finGastoPeriodicidad">Periodicidad</label>
+              <select id="finGastoPeriodicidad" class="form-select">
+                <option>Mensual</option><option>Bimestral</option><option>Trimestral</option>
+                <option>Semestral</option><option>Anual</option><option>Único</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finGastoValorMensual">Valor mensual equivalente</label>
+              <input id="finGastoValorMensual" type="number" min="0" step="0.01" class="form-control" readonly>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finGastoFechaInicio">Vigencia desde</label>
+              <input id="finGastoFechaInicio" type="date" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finGastoFechaFin">Vigencia hasta</label>
+              <input id="finGastoFechaFin" type="date" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finGastoObservaciones">Observaciones</label>
+              <input id="finGastoObservaciones" class="form-control">
+            </div>
+
+            <div class="col-12 d-flex justify-content-end gap-2 flex-wrap">
+              <button id="btnLimpiarGastoFinanzas" type="button" class="btn-line">Limpiar</button>
+              <button id="btnGuardarGastoFinanzas" type="button" class="btn-auro">
+                <i class="bi bi-save me-1"></i> Guardar gasto
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-modern mb-0">
+              <thead><tr><th>Gasto</th><th>Categoría</th><th>Valor</th><th>Periodicidad</th><th>Mensual</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="finGastosTbody"></tbody>
+            </table>
+          </div>
+          <div id="finGastosMobile" class="mobile-cards mt-3"></div>
+        </div>
+
+        <div class="security-card mb-3">
+          <div class="security-card-head">
+            <div>
+              <h5>Configuración económica de médicos</h5>
+              <p>Define el esquema de pago por profesional sin modificar el catálogo clínico.</p>
+            </div>
+          </div>
+
+          <div id="finanzasMedicosMsg" class="notice mb-3">
+            <i class="bi bi-info-circle me-1"></i> Cargando configuración de médicos...
+          </div>
+
+          <input id="finMedicoConfigId" type="hidden">
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold" for="finMedicoId">Médico</label>
+              <select id="finMedicoId" class="form-select"><option value="">Seleccione médico</option></select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoTipoPago">Tipo de pago</label>
+              <select id="finMedicoTipoPago" class="form-select">
+                <option value="Porcentaje">Porcentaje</option>
+                <option value="Fijo">Valor fijo</option>
+                <option value="Hora">Por hora</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-bold" for="finMedicoPorcentaje">Porcentaje (%)</label>
+              <input id="finMedicoPorcentaje" type="number" min="0" max="100" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoValorFijo">Valor fijo</label>
+              <input id="finMedicoValorFijo" type="number" min="0" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoValorHora">Valor / hora</label>
+              <input id="finMedicoValorHora" type="number" min="0" step="0.01" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoVigenciaDesde">Vigencia desde</label>
+              <input id="finMedicoVigenciaDesde" type="date" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoVigenciaHasta">Vigencia hasta</label>
+              <input id="finMedicoVigenciaHasta" type="date" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold" for="finMedicoEstado">Estado</label>
+              <select id="finMedicoEstado" class="form-select"><option>Activo</option><option>Inactivo</option></select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold" for="finMedicoObservaciones">Observaciones</label>
+              <input id="finMedicoObservaciones" class="form-control">
+            </div>
+            <div class="col-12 d-flex justify-content-end gap-2 flex-wrap">
+              <button id="btnLimpiarMedicoFinanzas" type="button" class="btn-line">Limpiar</button>
+              <button id="btnGuardarMedicoFinanzas" type="button" class="btn-auro">
+                <i class="bi bi-save me-1"></i> Guardar configuración
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-modern mb-0">
+              <thead><tr><th>Médico</th><th>Tipo pago</th><th>%</th><th>Fijo</th><th>Hora</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody id="finMedicosTbody"></tbody>
+            </table>
+          </div>
+          <div id="finMedicosMobile" class="mobile-cards mt-3"></div>
+        </div>
+
+        <div class="security-card">
+          <div class="security-card-head">
+            <div>
+              <h5>Resumen mensual</h5>
+              <p>Indicadores financieros calculados para el período seleccionado.</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <input id="finResumenPeriodo" type="month" class="form-control" style="width:auto">
+              <button id="btnActualizarResumenFinanzas" type="button" class="btn-line">
+                <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+              </button>
+            </div>
+          </div>
+
+          <div id="finResumenMsg" class="notice mb-3">
+            <i class="bi bi-info-circle me-1"></i> Seleccione un período para actualizar el resumen.
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-3"><div class="cardx stat"><div><small>Ingresos</small><h3 id="finResIngresos">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Facturación</small><h3 id="finResFacturacion">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Gastos fijos</small><h3 id="finResFijos">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Gastos periódicos</small><h3 id="finResPeriodicos">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Variables</small><h3 id="finResVariables">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Comisiones</small><h3 id="finResComisiones">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Extraordinarios</small><h3 id="finResExtraordinarios">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Cartera</small><h3 id="finResCartera">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Resultado</small><h3 id="finResResultado">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Margen</small><h3 id="finResMargen">0%</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Punto equilibrio</small><h3 id="finResPuntoEquilibrio">$0.00</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Atenciones</small><h3 id="finResAtenciones">0</h3></div></div></div>
+            <div class="col-md-3"><div class="cardx stat"><div><small>Ticket promedio</small><h3 id="finResTicket">$0.00</h3></div></div></div>
+          </div>
+
+          <div id="finResResultadoCard" class="notice mt-3">
+            <i class="bi bi-graph-up-arrow me-1"></i> Resultado financiero del período.
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2210,6 +2535,8 @@
     document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.config-tab').forEach(x=>x.classList.remove('active'));
     const el=document.getElementById(id); if(el)el.classList.add('active'); if(btn)btn.classList.add('active');
+    if(id==='centro') inicializarCentroConfiguracion_();
+    if(id==='finanzas') inicializarFinanzasConfiguracion_();
     if(id==='seguridadAccesos') cargarSeguridadAccesos();
     if(id==='auditoriaClinica') cargarAuditoriaClinicaConfig();
     if(window.innerWidth<=980)document.getElementById('sidebar').classList.remove('show');
@@ -2246,22 +2573,7 @@
     };
   }
   function normAsignacion(a){return {id_medico_servicio:a.id_medico_servicio||'',id_medico:a.id_medico||'',id_servicio:a.id_servicio||'',duracion_min:Number(a.duracion_min||30),precio:Number(a.precio||0),estado:a.estado||'Activo'}}
-  function normHorario(h){
-    h=h||{};
-    return {
-      id_plantilla:h.id_plantilla||h.id||'',
-      nombre_plantilla:h.nombre_plantilla||h.nombre||'',
-      id_medico:h.id_medico||'',
-      dia_semana:Number(h.dia_semana||1),
-      hora_inicio:String(h.hora_inicio||'08:00').slice(0,5),
-      hora_fin:String(h.hora_fin||'12:00').slice(0,5),
-      duracion_min:Number(h.duracion_min||30),
-      intervalo_min:Number(h.intervalo_min||0),
-      vigencia_desde:String(h.vigencia_desde||'').slice(0,10),
-      vigencia_hasta:String(h.vigencia_hasta||'').slice(0,10),
-      estado:h.estado||'Activo'
-    };
-  }
+  function normHorario(h){return {id_plantilla:h.id_plantilla||'',id_medico:h.id_medico||'',dia_semana:Number(h.dia_semana||1),hora_inicio:String(h.hora_inicio||'08:00').slice(0,5),hora_fin:String(h.hora_fin||'12:00').slice(0,5),duracion_min:Number(h.duracion_min||30),intervalo_min:Number(h.intervalo_min||0),vigencia_desde:String(h.vigencia_desde||'').slice(0,10),vigencia_hasta:String(h.vigencia_hasta||'').slice(0,10),estado:h.estado||'Activo'}}
   const dias={1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo'};
 
   async function cargarMedicos(){
@@ -2290,26 +2602,10 @@
     asignacionesBody.innerHTML=medicoServicios.map(a=>`<tr><td>${safeText(mapM[a.id_medico]||a.id_medico)}</td><td>${safeText(mapS[a.id_servicio]||a.id_servicio)}</td><td>${a.duracion_min} min</td><td>${formatMoney(a.precio)}</td><td><span class="badgex ${a.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(a.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarAsignacion('${a.id_medico_servicio}')"><i class="bi bi-pencil"></i></button></td></tr>`).join('')||'<tr><td colspan="6" class="text-center text-muted py-4">Sin asignaciones</td></tr>';
     asignacionesMobile.innerHTML=medicoServicios.map(a=>`<div class="mobile-card"><b>${safeText(mapM[a.id_medico]||a.id_medico)}</b><div class="line"><span>Servicio</span><span>${safeText(mapS[a.id_servicio]||a.id_servicio)}</span></div><div class="line"><span>Duración</span><span>${a.duracion_min} min</span></div><div class="line"><span>Precio</span><span>${formatMoney(a.precio)}</span></div><div class="line"><span>Estado</span><span>${safeText(a.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarAsignacion('${a.id_medico_servicio}')">Editar</button></div>`).join('');
   }
-  function nombreVisualPlantillaHorario(h,mapM){
-    const guardado=String(h?.nombre_plantilla||'').trim();
-    if(guardado) return guardado;
-    const medico=String(mapM?.[h?.id_medico]||h?.id_medico||'Médico').trim();
-    const dia=dias[h?.dia_semana]||('Día '+String(h?.dia_semana||''));
-    const inicio=String(h?.hora_inicio||'').trim();
-    const fin=String(h?.hora_fin||'').trim();
-    return [medico,dia,(inicio&&fin?inicio+'-'+fin:'')].filter(Boolean).join(' · ');
-  }
-
   function renderHorarios(){
     const mapM=Object.fromEntries(medicos.map(m=>[m.id_medico,m.nombre_completo]));
-    horariosBody.innerHTML=horarios.map(h=>{
-      const nombrePlantilla=nombreVisualPlantillaHorario(h,mapM);
-      return `<tr><td><b>${safeText(nombrePlantilla)}</b></td><td>${safeText(mapM[h.id_medico]||h.id_medico)}</td><td>${dias[h.dia_semana]||h.dia_semana}</td><td>${h.hora_inicio}</td><td>${h.hora_fin}</td><td>${h.duracion_min} min</td><td>${h.intervalo_min} min</td><td>${safeText(h.vigencia_desde)}<br><small>${safeText(h.vigencia_hasta)}</small></td><td><span class="badgex ${h.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(h.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarHorario('${h.id_plantilla}')"><i class="bi bi-pencil"></i></button></td></tr>`;
-    }).join('')||'<tr><td colspan="10" class="text-center text-muted py-4">Sin plantillas</td></tr>';
-    horariosMobile.innerHTML=horarios.map(h=>{
-      const nombrePlantilla=nombreVisualPlantillaHorario(h,mapM);
-      return `<div class="mobile-card"><b>${safeText(nombrePlantilla)}</b><div class="line"><span>Médico</span><span>${safeText(mapM[h.id_medico]||h.id_medico)}</span></div><div class="line"><span>Día</span><span>${dias[h.dia_semana]||h.dia_semana}</span></div><div class="line"><span>Horario</span><span>${h.hora_inicio} - ${h.hora_fin}</span></div><div class="line"><span>Duración</span><span>${h.duracion_min} min</span></div><div class="line"><span>Vigencia</span><span>${safeText(h.vigencia_desde)} / ${safeText(h.vigencia_hasta)}</span></div><div class="line"><span>Estado</span><span>${safeText(h.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarHorario('${h.id_plantilla}')">Editar</button></div>`;
-    }).join('');
+    horariosBody.innerHTML=horarios.map(h=>`<tr><td>${safeText(mapM[h.id_medico]||h.id_medico)}</td><td>${dias[h.dia_semana]||h.dia_semana}</td><td>${h.hora_inicio}</td><td>${h.hora_fin}</td><td>${h.duracion_min} min</td><td>${h.intervalo_min} min</td><td>${safeText(h.vigencia_desde)}<br><small>${safeText(h.vigencia_hasta)}</small></td><td><span class="badgex ${h.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(h.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarHorario('${h.id_plantilla}')"><i class="bi bi-pencil"></i></button></td></tr>`).join('')||'<tr><td colspan="9" class="text-center text-muted py-4">Sin plantillas</td></tr>';
+    horariosMobile.innerHTML=horarios.map(h=>`<div class="mobile-card"><b>${safeText(mapM[h.id_medico]||h.id_medico)}</b><div class="line"><span>Día</span><span>${dias[h.dia_semana]||h.dia_semana}</span></div><div class="line"><span>Horario</span><span>${h.hora_inicio} - ${h.hora_fin}</span></div><div class="line"><span>Duración</span><span>${h.duracion_min} min</span></div><div class="line"><span>Vigencia</span><span>${safeText(h.vigencia_desde)} / ${safeText(h.vigencia_hasta)}</span></div><div class="line"><span>Estado</span><span>${safeText(h.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarHorario('${h.id_plantilla}')">Editar</button></div>`).join('');
   }
 
   function openModal(title,html){modalTitle.textContent=title;modalBody.innerHTML=html;modalConfig.classList.add('show')}
@@ -2319,25 +2615,7 @@
 
   function abrirServicio(s={}){openModal(s.id_servicio?'Editar servicio':'Nuevo servicio',`<div class="row g-3"><div class="col-md-6"><label class="form-label fw-bold">Nombre</label><input id="sNombre" class="form-control" value="${safeText(s.nombre||'')}"></div><div class="col-md-6"><label class="form-label fw-bold">Tipo</label><select id="sTipo" class="form-select"><option ${s.tipo==='Consulta'?'selected':''}>Consulta</option><option ${s.tipo==='Procedimiento'?'selected':''}>Procedimiento</option><option ${s.tipo==='Estudio'?'selected':''}>Estudio</option><option ${s.tipo==='Control'?'selected':''}>Control</option></select></div><div class="col-md-4"><label class="form-label fw-bold">Duración (min)</label><input id="sDuracion" type="number" class="form-control" value="${s.duracion_min||30}"></div><div class="col-md-4"><label class="form-label fw-bold">Precio</label><input id="sPrecio" type="number" step="0.01" class="form-control" value="${s.precio||0}"></div><div class="col-md-4"><label class="form-label fw-bold">Estado</label><select id="sEstado" class="form-select"><option ${s.estado==='Activo'?'selected':''}>Activo</option><option ${s.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div></div><div class="d-flex justify-content-end gap-2 mt-3"><button class="btn-line" onclick="cerrarModal()">Cancelar</button><button class="btn-auro" onclick="guardarServicio('${s.id_servicio||''}')">Guardar</button></div>`)}
   function editarServicio(id){abrirServicio(servicios.find(x=>x.id_servicio===id)||{})}
-  async function guardarServicio(id){
-    const nombreServicio=sNombre.value.trim();
-    const data={
-      id_servicio:id||uid('SER'),
-      nombre:nombreServicio,
-      nombre_servicio:nombreServicio,
-      tipo:sTipo.value,
-      tipo_servicio:sTipo.value,
-      duracion_min:Number(sDuracion.value||30),
-      precio:Number(sPrecio.value||0),
-      estado:sEstado.value,
-      actualizado_en:nowStr()
-    };
-    if(!nombreServicio)return alert('Ingrese el nombre');
-    await apiPost('guardarServicio',data);
-    cerrarModal();
-    await cargarServicios();
-    await cargarMedicoServicios();
-  }
+  async function guardarServicio(id){const data={id_servicio:id||uid('SER'),nombre:sNombre.value.trim(),tipo:sTipo.value,duracion_min:Number(sDuracion.value||30),precio:Number(sPrecio.value||0),estado:sEstado.value,actualizado_en:nowStr()};if(!data.nombre)return alert('Ingrese el nombre');await apiPost('guardarServicio',data);cerrarModal();await cargarServicios();await cargarMedicoServicios()}
 
   function abrirAsignacion(a={}){const om=medicos.filter(x=>x.estado==='Activo').map(x=>`<option value="${x.id_medico}" ${x.id_medico===a.id_medico?'selected':''}>${safeText(x.nombre_completo)}</option>`).join('');const os=servicios.filter(x=>x.estado==='Activo').map(x=>`<option value="${x.id_servicio}" ${x.id_servicio===a.id_servicio?'selected':''}>${safeText(x.nombre)}</option>`).join('');openModal(a.id_medico_servicio?'Editar asignación':'Nueva asignación',`<div class="row g-3"><div class="col-md-6"><label class="form-label fw-bold">Médico</label><select id="aMedico" class="form-select">${om}</select></div><div class="col-md-6"><label class="form-label fw-bold">Servicio</label><select id="aServicio" class="form-select">${os}</select></div><div class="col-md-4"><label class="form-label fw-bold">Duración</label><input id="aDuracion" type="number" class="form-control" value="${a.duracion_min||30}"></div><div class="col-md-4"><label class="form-label fw-bold">Precio</label><input id="aPrecio" type="number" step="0.01" class="form-control" value="${a.precio||0}"></div><div class="col-md-4"><label class="form-label fw-bold">Estado</label><select id="aEstado" class="form-select"><option ${a.estado==='Activo'?'selected':''}>Activo</option><option ${a.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div></div><div class="d-flex justify-content-end gap-2 mt-3"><button class="btn-line" onclick="cerrarModal()">Cancelar</button><button class="btn-auro" onclick="guardarAsignacion('${a.id_medico_servicio||''}')">Guardar</button></div>`)}
   function editarAsignacion(id){abrirAsignacion(medicoServicios.find(x=>x.id_medico_servicio===id)||{})}
@@ -2347,10 +2625,16 @@
   function editarHorario(id){abrirHorario(horarios.find(x=>x.id_plantilla===id)||{})}
   async function guardarHorario(id){const data={id_plantilla:id||uid('PH'),id_medico:hMedico.value,dia_semana:Number(hDia.value),hora_inicio:hInicio.value,hora_fin:hFin.value,duracion_min:Number(hDuracion.value||30),intervalo_min:Number(hIntervalo.value||0),vigencia_desde:hDesde.value,vigencia_hasta:hHasta.value,estado:hEstado.value,actualizado_en:nowStr()};if(data.hora_inicio>=data.hora_fin)return alert('La hora fin debe ser mayor');await apiPost('guardarPlantillaHorario',data);cerrarModal();await cargarPlantillasHorario()}
 
-  function cargarConfiguracionCentro(){
-    const moduloCentro=window.IASYN_CONFIG_CENTRO||window.AUROSANAX_CONFIG_CENTRO||null;
-    if(moduloCentro && typeof moduloCentro.init==='function'){
-      moduloCentro.init({apiUrl:API_URL,mountId:'configCentroMount'});
+  async function inicializarCentroConfiguracion_(){
+    if(typeof window.cargarConfiguracionCentro === 'function'){
+      return await window.cargarConfiguracionCentro();
+    }
+  }
+
+  async function inicializarFinanzasConfiguracion_(){
+    const modulo = window.IASYN_CONFIG_FINANZAS || window.auroConfigFinanzas || null;
+    if(modulo && typeof modulo.inicializar === 'function'){
+      return await modulo.inicializar();
     }
   }
 
@@ -3180,7 +3464,11 @@
     }
 
     if(seguridad.tienePermiso('configuracion_centro', usuario)){
-      await cargarConfiguracionCentro();
+      await inicializarCentroConfiguracion_();
+    }
+
+    if(seguridad.tienePermiso('configuracion_finanzas', usuario)){
+      await inicializarFinanzasConfiguracion_();
     }
   });
 
