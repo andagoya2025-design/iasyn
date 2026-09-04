@@ -1,3 +1,10 @@
+<!--
+ IASYN · CONFIGURACIÓN — CORRECCIÓN QUIRÚRGICA 2026-09
+ - Servicios: acepta nombre_servicio/nombre/servicio sin perder compatibilidad.
+ - Plantillas: muestra un nombre descriptivo; no crea columnas nuevas en Sheets.
+ - No modifica IDs, relaciones, precios, médicos, citas ni datos clínicos.
+ - IASYN tiene prioridad en aliases de Configuración Centro y Auditoría.
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,7 +46,7 @@
   
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.0 ULTRA PREMIUM
+       IASYN CONFIGURACION V5.0 ULTRA PREMIUM
        SOLO VISUAL - NO MODIFICA FUNCIONES
        Escritorio + Android + iPhone
        ========================================================== */
@@ -389,7 +396,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.1 PREMIUM RESPONSIVE FIX
+       IASYN CONFIGURACION V5.1 PREMIUM RESPONSIVE FIX
        SOLO VISUAL - NO MODIFICA FUNCIONES
        - Corrige tamaños exagerados de títulos
        - Mantiene tarjetas en 4 columnas en escritorio
@@ -738,7 +745,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.2 SESION USUARIO
+       IASYN CONFIGURACION V5.2 SESION USUARIO
        SOLO VISUAL / SESION - NO MODIFICA BACKEND
        ========================================================== */
     .cfg-session{
@@ -857,7 +864,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.3 SEGURIDAD PREMIUM
+       IASYN CONFIGURACION V5.3 SEGURIDAD PREMIUM
        SOLO VISUAL / UX - NO MODIFICA BACKEND
        ========================================================== */
     .security-layout{
@@ -1100,7 +1107,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.4 ACCESOS RAPIDOS SEGURIDAD
+       IASYN CONFIGURACION V5.4 ACCESOS RAPIDOS SEGURIDAD
        SOLO VISUAL / UX - NO MODIFICA BACKEND
        ========================================================== */
     .security-quick-grid{
@@ -1154,7 +1161,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.5 SEGURIDAD ACCESO MODULAR
+       IASYN CONFIGURACION V5.5 SEGURIDAD ACCESO MODULAR
        SOLO VISUAL / UX - NO MODIFICA BACKEND
        ========================================================== */
     .security-access-intro{
@@ -1297,7 +1304,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.6 SEGURIDAD REAL
+       IASYN CONFIGURACION V5.6 SEGURIDAD REAL
        SOLO FRONTEND / UX - BACKEND EN seguridad.js
        ========================================================== */
     .security-password-wrap{
@@ -1420,7 +1427,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.7 CONTRASEÑA USUARIO
+       IASYN CONFIGURACION V5.7 CONTRASEÑA USUARIO
        SOLO FRONTEND / UX - BACKEND EN seguridad.js
        ========================================================== */
     .auro-password-wrap{
@@ -1450,7 +1457,7 @@
 
 
     /* ==========================================================
-       AUROSANAX CONFIGURACION V5.8 CONTROL CORRECCIONES CLINICAS
+       IASYN CONFIGURACION V5.8 CONTROL CORRECCIONES CLINICAS
        SOLO VISUAL / UX - BACKEND EN auditoria_clinica.js
        ========================================================== */
     .auro-audit-control-card{
@@ -1668,7 +1675,7 @@
     </section>
 
     <section class="screen" id="horarios">
-      <div class="cardx p-3"><div class="section-head"><div><h4>Plantillas de horario</h4><p>Configura horarios repetitivos por médico y día de la semana.</p></div><button class="btn-auro" onclick="abrirHorario()"><i class="bi bi-plus-circle me-1"></i> Nueva plantilla</button></div><div class="notice mb-3"><i class="bi bi-info-circle me-1"></i> Estas plantillas sirven como base para generar disponibilidad. No crean citas automáticamente.</div><div class="table-responsive"><table class="table table-modern"><thead><tr><th>Médico</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Duración</th><th>Intervalo</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="horariosBody"></tbody></table></div><div class="mobile-cards" id="horariosMobile"></div></div>
+      <div class="cardx p-3"><div class="section-head"><div><h4>Plantillas de horario</h4><p>Configura horarios repetitivos por médico y día de la semana.</p></div><button class="btn-auro" onclick="abrirHorario()"><i class="bi bi-plus-circle me-1"></i> Nueva plantilla</button></div><div class="notice mb-3"><i class="bi bi-info-circle me-1"></i> Estas plantillas sirven como base para generar disponibilidad. No crean citas automáticamente.</div><div class="table-responsive"><table class="table table-modern"><thead><tr><th>Plantilla</th><th>Médico</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Duración</th><th>Intervalo</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="horariosBody"></tbody></table></div><div class="mobile-cards" id="horariosMobile"></div></div>
     </section>
 
     <section class="screen" id="centro">
@@ -2105,7 +2112,7 @@
     document.querySelectorAll('.screen')
       .forEach(screen => screen.classList.remove('active'));
 
-    /* AUROSANAX 2026-08-19 · CONFIGURACIÓN GENERAL SIN SUBMÓDULOS
+    /* IASYN 2026-08-19 · CONFIGURACIÓN GENERAL SIN SUBMÓDULOS
        Si el usuario tiene únicamente el permiso general "configuracion",
        permanece dentro de configuracion.html aunque no tenga ningún
        submódulo habilitado. No se redirige a Index por tener dashboard.
@@ -2227,9 +2234,34 @@
   }
 
   function normMedico(m){return {id_medico:m.id_medico||'',nombres:m.nombres||'',apellidos:m.apellidos||'',especialidad:m.especialidad||'',registro_profesional:m.registro_profesional||'',telefono:m.telefono||'',email:m.email||'',estado:m.estado||'Activo',nombre_completo:m.nombre_completo||`${m.nombres||''} ${m.apellidos||''}`.trim()}}
-  function normServicio(s){return {id_servicio:s.id_servicio||'',nombre:s.nombre||'',tipo:s.tipo||'Consulta',duracion_min:Number(s.duracion_min||30),precio:Number(s.precio||0),estado:s.estado||'Activo'}}
+  function normServicio(s){
+    s=s||{};
+    return {
+      id_servicio:s.id_servicio||s.id||'',
+      nombre:s.nombre_servicio||s.nombre||s.servicio||'',
+      tipo:s.tipo_servicio||s.tipo||'Consulta',
+      duracion_min:Number(s.duracion_min||s.duracion||30),
+      precio:Number(s.precio||s.precio_base||s.tarifa||0),
+      estado:s.estado||'Activo'
+    };
+  }
   function normAsignacion(a){return {id_medico_servicio:a.id_medico_servicio||'',id_medico:a.id_medico||'',id_servicio:a.id_servicio||'',duracion_min:Number(a.duracion_min||30),precio:Number(a.precio||0),estado:a.estado||'Activo'}}
-  function normHorario(h){return {id_plantilla:h.id_plantilla||'',id_medico:h.id_medico||'',dia_semana:Number(h.dia_semana||1),hora_inicio:String(h.hora_inicio||'08:00').slice(0,5),hora_fin:String(h.hora_fin||'12:00').slice(0,5),duracion_min:Number(h.duracion_min||30),intervalo_min:Number(h.intervalo_min||0),vigencia_desde:String(h.vigencia_desde||'').slice(0,10),vigencia_hasta:String(h.vigencia_hasta||'').slice(0,10),estado:h.estado||'Activo'}}
+  function normHorario(h){
+    h=h||{};
+    return {
+      id_plantilla:h.id_plantilla||h.id||'',
+      nombre_plantilla:h.nombre_plantilla||h.nombre||'',
+      id_medico:h.id_medico||'',
+      dia_semana:Number(h.dia_semana||1),
+      hora_inicio:String(h.hora_inicio||'08:00').slice(0,5),
+      hora_fin:String(h.hora_fin||'12:00').slice(0,5),
+      duracion_min:Number(h.duracion_min||30),
+      intervalo_min:Number(h.intervalo_min||0),
+      vigencia_desde:String(h.vigencia_desde||'').slice(0,10),
+      vigencia_hasta:String(h.vigencia_hasta||'').slice(0,10),
+      estado:h.estado||'Activo'
+    };
+  }
   const dias={1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo'};
 
   async function cargarMedicos(){
@@ -2258,10 +2290,26 @@
     asignacionesBody.innerHTML=medicoServicios.map(a=>`<tr><td>${safeText(mapM[a.id_medico]||a.id_medico)}</td><td>${safeText(mapS[a.id_servicio]||a.id_servicio)}</td><td>${a.duracion_min} min</td><td>${formatMoney(a.precio)}</td><td><span class="badgex ${a.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(a.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarAsignacion('${a.id_medico_servicio}')"><i class="bi bi-pencil"></i></button></td></tr>`).join('')||'<tr><td colspan="6" class="text-center text-muted py-4">Sin asignaciones</td></tr>';
     asignacionesMobile.innerHTML=medicoServicios.map(a=>`<div class="mobile-card"><b>${safeText(mapM[a.id_medico]||a.id_medico)}</b><div class="line"><span>Servicio</span><span>${safeText(mapS[a.id_servicio]||a.id_servicio)}</span></div><div class="line"><span>Duración</span><span>${a.duracion_min} min</span></div><div class="line"><span>Precio</span><span>${formatMoney(a.precio)}</span></div><div class="line"><span>Estado</span><span>${safeText(a.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarAsignacion('${a.id_medico_servicio}')">Editar</button></div>`).join('');
   }
+  function nombreVisualPlantillaHorario(h,mapM){
+    const guardado=String(h?.nombre_plantilla||'').trim();
+    if(guardado) return guardado;
+    const medico=String(mapM?.[h?.id_medico]||h?.id_medico||'Médico').trim();
+    const dia=dias[h?.dia_semana]||('Día '+String(h?.dia_semana||''));
+    const inicio=String(h?.hora_inicio||'').trim();
+    const fin=String(h?.hora_fin||'').trim();
+    return [medico,dia,(inicio&&fin?inicio+'-'+fin:'')].filter(Boolean).join(' · ');
+  }
+
   function renderHorarios(){
     const mapM=Object.fromEntries(medicos.map(m=>[m.id_medico,m.nombre_completo]));
-    horariosBody.innerHTML=horarios.map(h=>`<tr><td>${safeText(mapM[h.id_medico]||h.id_medico)}</td><td>${dias[h.dia_semana]||h.dia_semana}</td><td>${h.hora_inicio}</td><td>${h.hora_fin}</td><td>${h.duracion_min} min</td><td>${h.intervalo_min} min</td><td>${safeText(h.vigencia_desde)}<br><small>${safeText(h.vigencia_hasta)}</small></td><td><span class="badgex ${h.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(h.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarHorario('${h.id_plantilla}')"><i class="bi bi-pencil"></i></button></td></tr>`).join('')||'<tr><td colspan="9" class="text-center text-muted py-4">Sin plantillas</td></tr>';
-    horariosMobile.innerHTML=horarios.map(h=>`<div class="mobile-card"><b>${safeText(mapM[h.id_medico]||h.id_medico)}</b><div class="line"><span>Día</span><span>${dias[h.dia_semana]||h.dia_semana}</span></div><div class="line"><span>Horario</span><span>${h.hora_inicio} - ${h.hora_fin}</span></div><div class="line"><span>Duración</span><span>${h.duracion_min} min</span></div><div class="line"><span>Vigencia</span><span>${safeText(h.vigencia_desde)} / ${safeText(h.vigencia_hasta)}</span></div><div class="line"><span>Estado</span><span>${safeText(h.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarHorario('${h.id_plantilla}')">Editar</button></div>`).join('');
+    horariosBody.innerHTML=horarios.map(h=>{
+      const nombrePlantilla=nombreVisualPlantillaHorario(h,mapM);
+      return `<tr><td><b>${safeText(nombrePlantilla)}</b></td><td>${safeText(mapM[h.id_medico]||h.id_medico)}</td><td>${dias[h.dia_semana]||h.dia_semana}</td><td>${h.hora_inicio}</td><td>${h.hora_fin}</td><td>${h.duracion_min} min</td><td>${h.intervalo_min} min</td><td>${safeText(h.vigencia_desde)}<br><small>${safeText(h.vigencia_hasta)}</small></td><td><span class="badgex ${h.estado==='Activo'?'badge-ok':'badge-warn'}">${safeText(h.estado)}</span></td><td><button class="btn-line btn-sm" onclick="editarHorario('${h.id_plantilla}')"><i class="bi bi-pencil"></i></button></td></tr>`;
+    }).join('')||'<tr><td colspan="10" class="text-center text-muted py-4">Sin plantillas</td></tr>';
+    horariosMobile.innerHTML=horarios.map(h=>{
+      const nombrePlantilla=nombreVisualPlantillaHorario(h,mapM);
+      return `<div class="mobile-card"><b>${safeText(nombrePlantilla)}</b><div class="line"><span>Médico</span><span>${safeText(mapM[h.id_medico]||h.id_medico)}</span></div><div class="line"><span>Día</span><span>${dias[h.dia_semana]||h.dia_semana}</span></div><div class="line"><span>Horario</span><span>${h.hora_inicio} - ${h.hora_fin}</span></div><div class="line"><span>Duración</span><span>${h.duracion_min} min</span></div><div class="line"><span>Vigencia</span><span>${safeText(h.vigencia_desde)} / ${safeText(h.vigencia_hasta)}</span></div><div class="line"><span>Estado</span><span>${safeText(h.estado)}</span></div><button class="btn-line w-100 mt-2" onclick="editarHorario('${h.id_plantilla}')">Editar</button></div>`;
+    }).join('');
   }
 
   function openModal(title,html){modalTitle.textContent=title;modalBody.innerHTML=html;modalConfig.classList.add('show')}
@@ -2271,7 +2319,25 @@
 
   function abrirServicio(s={}){openModal(s.id_servicio?'Editar servicio':'Nuevo servicio',`<div class="row g-3"><div class="col-md-6"><label class="form-label fw-bold">Nombre</label><input id="sNombre" class="form-control" value="${safeText(s.nombre||'')}"></div><div class="col-md-6"><label class="form-label fw-bold">Tipo</label><select id="sTipo" class="form-select"><option ${s.tipo==='Consulta'?'selected':''}>Consulta</option><option ${s.tipo==='Procedimiento'?'selected':''}>Procedimiento</option><option ${s.tipo==='Estudio'?'selected':''}>Estudio</option><option ${s.tipo==='Control'?'selected':''}>Control</option></select></div><div class="col-md-4"><label class="form-label fw-bold">Duración (min)</label><input id="sDuracion" type="number" class="form-control" value="${s.duracion_min||30}"></div><div class="col-md-4"><label class="form-label fw-bold">Precio</label><input id="sPrecio" type="number" step="0.01" class="form-control" value="${s.precio||0}"></div><div class="col-md-4"><label class="form-label fw-bold">Estado</label><select id="sEstado" class="form-select"><option ${s.estado==='Activo'?'selected':''}>Activo</option><option ${s.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div></div><div class="d-flex justify-content-end gap-2 mt-3"><button class="btn-line" onclick="cerrarModal()">Cancelar</button><button class="btn-auro" onclick="guardarServicio('${s.id_servicio||''}')">Guardar</button></div>`)}
   function editarServicio(id){abrirServicio(servicios.find(x=>x.id_servicio===id)||{})}
-  async function guardarServicio(id){const data={id_servicio:id||uid('SER'),nombre:sNombre.value.trim(),tipo:sTipo.value,duracion_min:Number(sDuracion.value||30),precio:Number(sPrecio.value||0),estado:sEstado.value,actualizado_en:nowStr()};if(!data.nombre)return alert('Ingrese el nombre');await apiPost('guardarServicio',data);cerrarModal();await cargarServicios();await cargarMedicoServicios()}
+  async function guardarServicio(id){
+    const nombreServicio=sNombre.value.trim();
+    const data={
+      id_servicio:id||uid('SER'),
+      nombre:nombreServicio,
+      nombre_servicio:nombreServicio,
+      tipo:sTipo.value,
+      tipo_servicio:sTipo.value,
+      duracion_min:Number(sDuracion.value||30),
+      precio:Number(sPrecio.value||0),
+      estado:sEstado.value,
+      actualizado_en:nowStr()
+    };
+    if(!nombreServicio)return alert('Ingrese el nombre');
+    await apiPost('guardarServicio',data);
+    cerrarModal();
+    await cargarServicios();
+    await cargarMedicoServicios();
+  }
 
   function abrirAsignacion(a={}){const om=medicos.filter(x=>x.estado==='Activo').map(x=>`<option value="${x.id_medico}" ${x.id_medico===a.id_medico?'selected':''}>${safeText(x.nombre_completo)}</option>`).join('');const os=servicios.filter(x=>x.estado==='Activo').map(x=>`<option value="${x.id_servicio}" ${x.id_servicio===a.id_servicio?'selected':''}>${safeText(x.nombre)}</option>`).join('');openModal(a.id_medico_servicio?'Editar asignación':'Nueva asignación',`<div class="row g-3"><div class="col-md-6"><label class="form-label fw-bold">Médico</label><select id="aMedico" class="form-select">${om}</select></div><div class="col-md-6"><label class="form-label fw-bold">Servicio</label><select id="aServicio" class="form-select">${os}</select></div><div class="col-md-4"><label class="form-label fw-bold">Duración</label><input id="aDuracion" type="number" class="form-control" value="${a.duracion_min||30}"></div><div class="col-md-4"><label class="form-label fw-bold">Precio</label><input id="aPrecio" type="number" step="0.01" class="form-control" value="${a.precio||0}"></div><div class="col-md-4"><label class="form-label fw-bold">Estado</label><select id="aEstado" class="form-select"><option ${a.estado==='Activo'?'selected':''}>Activo</option><option ${a.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div></div><div class="d-flex justify-content-end gap-2 mt-3"><button class="btn-line" onclick="cerrarModal()">Cancelar</button><button class="btn-auro" onclick="guardarAsignacion('${a.id_medico_servicio||''}')">Guardar</button></div>`)}
   function editarAsignacion(id){abrirAsignacion(medicoServicios.find(x=>x.id_medico_servicio===id)||{})}
@@ -2282,8 +2348,9 @@
   async function guardarHorario(id){const data={id_plantilla:id||uid('PH'),id_medico:hMedico.value,dia_semana:Number(hDia.value),hora_inicio:hInicio.value,hora_fin:hFin.value,duracion_min:Number(hDuracion.value||30),intervalo_min:Number(hIntervalo.value||0),vigencia_desde:hDesde.value,vigencia_hasta:hHasta.value,estado:hEstado.value,actualizado_en:nowStr()};if(data.hora_inicio>=data.hora_fin)return alert('La hora fin debe ser mayor');await apiPost('guardarPlantillaHorario',data);cerrarModal();await cargarPlantillasHorario()}
 
   function cargarConfiguracionCentro(){
-    if(window.AUROSANAX_CONFIG_CENTRO && typeof window.AUROSANAX_CONFIG_CENTRO.init==='function'){
-      window.AUROSANAX_CONFIG_CENTRO.init({apiUrl:API_URL,mountId:'configCentroMount'});
+    const moduloCentro=window.IASYN_CONFIG_CENTRO||window.AUROSANAX_CONFIG_CENTRO||null;
+    if(moduloCentro && typeof moduloCentro.init==='function'){
+      moduloCentro.init({apiUrl:API_URL,mountId:'configCentroMount'});
     }
   }
 
@@ -2558,7 +2625,7 @@
   function recargarBitacoraSeguridad(){ cargarBitacoraSeguridad(); }
 
   function obtenerAuditoriaClinica(){
-    return window.AUROSANAX_AUDITORIA_CLINICA || null;
+    return window.IASYN_AUDITORIA_CLINICA || window.AUROSANAX_AUDITORIA_CLINICA || null;
   }
 
   async function cargarAuditoriaClinicaConfig(){
