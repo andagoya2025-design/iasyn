@@ -735,8 +735,8 @@
           </div>
           <div class="col-md-8">
             <label class="form-label fw-bold">Logo URL</label>
-            <input id="cfgLogoUrl" class="form-control" placeholder="Pegue aquí el enlace público del logo en Drive" oninput="actualizarPreviewLogoCentro()">
-            <div class="text-muted small mt-1">Recomendado: PNG transparente 600 × 600 px. El sistema también permite subir el logo directamente a Drive.</div>
+            <input id="cfgLogoUrl" class="form-control" placeholder="Pegue aquí el enlace público del logo propio del centro en Drive" oninput="actualizarPreviewLogoCentro()">
+            <div class="text-muted small mt-1">Recomendado: PNG transparente 600 × 600 px. Use únicamente un logo propio de esta instalación.</div>
 
             <div class="mt-3">
               <label class="form-label fw-bold">Subir logo desde este equipo</label>
@@ -1628,11 +1628,113 @@ function showSecurityPanel(id,btn){
   if(btn) btn.classList.add('active');
 }
 
+  /* ==========================================================
+     IASYN · CAPA DE AUTONOMÍA INSTITUCIONAL
+     QUIRÚRGICA / ANTIRREGRESIVA
+     ----------------------------------------------------------
+     OBJETIVO:
+     - Mantener idéntica interfaz y contratos del módulo Configuración.
+     - No mostrar ni reutilizar identidad/Drive heredados de AUROSANAX.
+     - No tocar contraseña, usuarios, seguridad ni lógica clínica.
+     - No realizar escrituras automáticas al abrir la pantalla.
+     - Bloquear cualquier intento de volver a enlazar IDs legacy.
+     ========================================================== */
+
+  const IASYN_LEGACY_IDS_BLOQUEADOS_UI = Object.freeze([
+    '1v16jb_jwvI6D4yIE0HyjtZDwC5ytpa32_X_j56FG_y0',
+    '1IlV5bnWhfn0FTJQahJIbNz2bT8CP3pkp4ZPBKFJvLBw',
+    '1EDd-4Yk5cl1VM5UTpYUsCMbJ2BzfmCi2FDnuFl2gZqA',
+    '1SkTFM2SDl0G0z4pe-JFWFGE3TykoNI3v',
+    '1-4DR5Z8BndQrILMlsE8QA7khhUFyvUGV',
+    '1z5qIQuEEWW5A73uMAEDlGPHeu7EVE3Uj'
+  ]);
+
+  const IASYN_CLAVES_RECURSO_UI = Object.freeze(new Set([
+    'drive_root_folder_id','drive_root_folder_url',
+    'drive_identidad_folder_id','drive_identidad_folder_url',
+    'drive_logos_folder_id','drive_logos_folder_url',
+    'drive_firmas_folder_id','drive_firmas_folder_url',
+    'drive_sellos_folder_id','drive_sellos_folder_url',
+    'drive_pdfs_folder_id','drive_pdfs_folder_url',
+    'drive_documentos_firmados_folder_id','drive_documentos_firmados_folder_url',
+    'drive_respaldos_folder_id','drive_respaldos_folder_url',
+    'drive_documentos_clinicos_folder_id','drive_documentos_clinicos_folder_url',
+    'logo_file_id','logo_url','logo_drive_url'
+  ]));
+
+  function iasynContieneLegacyUI_(valor){
+    const txt = String(valor === null || valor === undefined ? '' : valor).trim();
+    if(!txt) return false;
+    return IASYN_LEGACY_IDS_BLOQUEADOS_UI.some(id => txt.includes(id));
+  }
+
+  function iasynEsIdentidadAurosanaxLegacy_(clave, valor){
+    const k = String(clave || '').trim();
+    const v = String(valor === null || valor === undefined ? '' : valor).trim();
+    const n = v.toLowerCase();
+
+    if(k === 'nombre_clinica'){
+      return n === 'aurosanaxmedic' || n === 'aurosanax' || n === 'aurosanax medic';
+    }
+    if(k === 'email_clinica'){
+      return n === 'dra_aurora_andagoya@hotmail.com' || n === 'aurosanax@hotmail.com';
+    }
+    if(k === 'direccion_clinica'){
+      return n === 'edificio agora 21 piso 6' || n === 'edificio ágora 21 piso 6';
+    }
+    if(k === 'mensaje_recordatorio_cita'){
+      return /\baurosanax\b/i.test(v);
+    }
+    return false;
+  }
+
+  function iasynSanitizarConfiguracionUI_(config){
+    if(!config || typeof config !== 'object' || Array.isArray(config)) return config;
+
+    const limpio = Object.assign({}, config);
+
+    Object.keys(limpio).forEach(clave => {
+      const valor = limpio[clave];
+
+      if(IASYN_CLAVES_RECURSO_UI.has(clave) && iasynContieneLegacyUI_(valor)){
+        limpio[clave] = '';
+        return;
+      }
+
+      if(iasynEsIdentidadAurosanaxLegacy_(clave, valor)){
+        if(clave === 'mensaje_recordatorio_cita'){
+          limpio[clave] = 'Hola {paciente}, le recordamos su cita el {fecha} a las {hora}.';
+        }else{
+          limpio[clave] = '';
+        }
+      }
+    });
+
+    return limpio;
+  }
+
+  function iasynValidarEscrituraConfiguracionUI_(accion, data){
+    if(accion !== 'editarConfiguracion' && accion !== 'guardarConfiguracion') return;
+
+    const d = data && typeof data === 'object' ? data : {};
+    const clave = String(d.clave || '').trim();
+    const valor = d.valor === null || d.valor === undefined ? '' : String(d.valor).trim();
+
+    if(clave && IASYN_CLAVES_RECURSO_UI.has(clave) && iasynContieneLegacyUI_(valor)){
+      throw new Error('IASYN bloqueó una referencia heredada de AUROSANAX. Use un recurso propio de IASYN.');
+    }
+
+    if(clave && iasynEsIdentidadAurosanaxLegacy_(clave, valor)){
+      throw new Error('IASYN bloqueó datos institucionales heredados de AUROSANAX. Ingrese los datos propios del nuevo centro.');
+    }
+  }
+
   async function apiGet(accion){
     const url = API_URL + '?accion=' + encodeURIComponent(accion) + '&t=' + Date.now();
     const res = await fetch(url);
     if(!res.ok) throw new Error('Error HTTP ' + res.status);
-    return await res.json();
+    const json = await res.json();
+    return accion === 'obtenerConfiguracion' ? iasynSanitizarConfiguracionUI_(json) : json;
   }
 
   async function apiGetParams(accion, params){
@@ -1640,10 +1742,13 @@ function showSecurityPanel(id,btn){
     Object.entries(params || {}).forEach(([k,v]) => q.append(k, v ?? ''));
     const res = await fetch(API_URL + '?' + q.toString());
     if(!res.ok) throw new Error('Error HTTP ' + res.status);
-    return await res.json();
+    const json = await res.json();
+    return accion === 'obtenerConfiguracion' ? iasynSanitizarConfiguracionUI_(json) : json;
   }
 
   async function apiPost(accion, data){
+    iasynValidarEscrituraConfiguracionUI_(accion, data);
+
     const res = await fetch(API_URL, {
       method:'POST',
       body: JSON.stringify({accion, data})
