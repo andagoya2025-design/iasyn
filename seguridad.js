@@ -1,5 +1,5 @@
 /* ==========================================================
-   AUROSANAX CLINICAL ERP
+   IASYN CLINICAL ERP
    MÓDULO: SEGURIDAD / LOGIN
    Archivo: seguridad.js
    Versión: 1.3.2
@@ -25,29 +25,72 @@
   'use strict';
 
   // IASYN: identificador técnico de build para verificar caché del navegador.
-  window.IASYN_SEGURIDAD_BUILD = '2026-09-02-R4-USUARIOS';
+  window.IASYN_SEGURIDAD_BUILD = '2026-09-04-R5-AUTONOMO';
 
   /* ========================================================
      CONFIGURACIÓN TÉCNICA
      Para localizar rápidamente el endpoint, buscar:
-     AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO
+     IASYN_SEGURIDAD_ENDPOINT_PROTEGIDO
      ======================================================== */
 
-  const AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO =
+  const IASYN_SEGURIDAD_ENDPOINT_PROTEGIDO =
     'https://script.google.com/macros/s/AKfycbwGgDpd_cUcGZa5irfGG8eem3LBvWE1-gGknCYUr-YWDI3XT1C5TPC0JK54QhoVFQwW/exec';
 
   const SEGURIDAD_CONFIG = Object.freeze({
-    apiUrl: AUROSANAX_SEGURIDAD_ENDPOINT_PROTEGIDO,
+    apiUrl: IASYN_SEGURIDAD_ENDPOINT_PROTEGIDO,
     paginaErp: 'index.html',
     paginaLogin: 'login.html',
+    claveToken: 'iasyn_seguridad_token',
+    claveSesion: 'iasyn_seguridad_sesion',
+    claveUsuario: 'iasyn_seguridad_usuario',
+    claveExpiracion: 'iasyn_seguridad_expira_en',
+    claveUltimaValidacion: 'iasyn_seguridad_ultima_validacion',
+    intervaloRevalidacionMs: 300000,
+    tiempoEsperaMs: 60000
+  });
+
+  /* Compatibilidad de transición.
+     Solo permite recuperar una sesión ya abierta en versiones anteriores.
+     NO modifica usuarios, contraseñas, hash ni permisos en la base. */
+  const SEGURIDAD_CONFIG_LEGACY = Object.freeze({
     claveToken: 'aurosanax_seguridad_token',
     claveSesion: 'aurosanax_seguridad_sesion',
     claveUsuario: 'aurosanax_seguridad_usuario',
     claveExpiracion: 'aurosanax_seguridad_expira_en',
-    claveUltimaValidacion: 'aurosanax_seguridad_ultima_validacion',
-    intervaloRevalidacionMs: 300000,
-    tiempoEsperaMs: 60000
+    claveUltimaValidacion: 'aurosanax_seguridad_ultima_validacion'
   });
+
+  const IASYN_RECURSOS_LEGACY_BLOQUEADOS = Object.freeze([
+    '1SkTFM2SDl0G0z4pe-JFWFGE3TykoNI3v',
+    '1-4DR5Z8BndQrILMlsE8QA7khhUFyvUGV',
+    '1z5qIQuEEWW5A73uMAEDlGPHeu7EVE3Uj'
+  ]);
+
+  function contieneRecursoLegacyIASYN_(valor) {
+    const txt = String(valor == null ? '' : valor).trim();
+    if (!txt) return false;
+    return IASYN_RECURSOS_LEGACY_BLOQUEADOS.some(function (id) {
+      return txt.indexOf(id) !== -1;
+    });
+  }
+
+  function leerSesionStorageCompat_(claveNueva, claveLegacy) {
+    const actual = sessionStorage.getItem(claveNueva);
+    if (actual !== null && actual !== '') return actual;
+
+    const legacy = sessionStorage.getItem(claveLegacy);
+    if (legacy === null || legacy === '') return '';
+
+    // Migración local, no toca backend ni credenciales.
+    sessionStorage.setItem(claveNueva, legacy);
+    return legacy;
+  }
+
+  function limpiarClavesLegacySesion_() {
+    Object.keys(SEGURIDAD_CONFIG_LEGACY).forEach(function (k) {
+      sessionStorage.removeItem(SEGURIDAD_CONFIG_LEGACY[k]);
+    });
+  }
 
   const CATALOGO_PERMISOS = Object.freeze([
     { clave: 'dashboard', etiqueta: 'Inicio / Dashboard' },
@@ -59,7 +102,7 @@
     { clave: 'pacientes_edicion', etiqueta: 'Pacientes: edición general' },
     { clave: 'pacientes_edicion_administrativa', etiqueta: 'Pacientes: corregir datos administrativos' },
 
-    /* AUROSANAX PRECONSULTA - permisos configurables por usuario.
+    /* IASYN PRECONSULTA - permisos configurables por usuario.
        Fase 1: solo catálogo/plantillas de permisos; no abre módulos clínicos. */
     { clave: 'preconsulta', etiqueta: 'Preatención' },
     { clave: 'preconsulta_datos_administrativos', etiqueta: 'Preatención: datos administrativos' },
@@ -167,23 +210,23 @@
     const usuario = document.getElementById('txtUsuario');
     const clave = document.getElementById('txtClave');
 
-    if (form && form.dataset.auroSeguridadInit !== '1') {
-      form.dataset.auroSeguridadInit = '1';
+    if (form && form.dataset.iasynSeguridadInit !== '1') {
+      form.dataset.iasynSeguridadInit = '1';
       form.addEventListener('submit', function (event) {
         event.preventDefault();
         iniciarSesion();
       });
     }
 
-    if (btnMostrarClave && btnMostrarClave.dataset.auroSeguridadInit !== '1') {
-      btnMostrarClave.dataset.auroSeguridadInit = '1';
+    if (btnMostrarClave && btnMostrarClave.dataset.iasynSeguridadInit !== '1') {
+      btnMostrarClave.dataset.iasynSeguridadInit = '1';
       btnMostrarClave.addEventListener('click', alternarVisibilidadClave);
     }
 
     [usuario, clave].forEach(function (campo) {
-      if (!campo || campo.dataset.auroSeguridadInit === '1') return;
+      if (!campo || campo.dataset.iasynSeguridadInit === '1') return;
 
-      campo.dataset.auroSeguridadInit = '1';
+      campo.dataset.iasynSeguridadInit = '1';
       campo.addEventListener('input', ocultarMensajes);
     });
   }
@@ -201,7 +244,10 @@
         return;
       }
 
-      const nombre = textoSeguro(configuracion.nombre_clinica) || 'AUROSANAX';
+      const nombreConfig = textoSeguro(configuracion.nombre_clinica);
+      const nombre = /^(aurosanax|aurosanaxmedic|aurosanax medic)$/i.test(nombreConfig)
+        ? 'IASYN'
+        : (nombreConfig || 'IASYN');
       const subtitulo =
         textoSeguro(configuracion.subtitulo_login) ||
         textoSeguro(configuracion.nombre_sistema) ||
@@ -216,7 +262,8 @@
       establecerTexto('nombreCentro', nombre);
       establecerTexto('subtituloCentro', subtitulo);
       aplicarColoresInstitucionales(colorPrincipal, colorSecundario);
-      aplicarLogoCentro(configuracion.logo_url || configuracion.logo_file_id || '');
+      const logoConfigurado = configuracion.logo_url || configuracion.logo_file_id || '';
+      aplicarLogoCentro(contieneRecursoLegacyIASYN_(logoConfigurado) ? '' : logoConfigurado);
 
       document.title = nombre + ' - Inicio de sesión';
     } catch (error) {
@@ -226,7 +273,7 @@
   }
 
   function aplicarIdentidadPredeterminada() {
-    establecerTexto('nombreCentro', 'AUROSANAX');
+    establecerTexto('nombreCentro', 'IASYN');
     establecerTexto('subtituloCentro', 'Clinical ERP · Inicio de sesión');
     aplicarColoresInstitucionales('#7a174f', '#c23b83');
     mostrarLogoFallback();
@@ -332,7 +379,7 @@
     const actual = usuario || obtenerUsuarioActual() || {};
     const rol = textoSeguro(actual.rol).toUpperCase();
 
-    /* AUROSANAX 2026-08-18 · ACCESO MODULAR QUIRÚRGICO
+    /* IASYN 2026-08-18 · ACCESO MODULAR QUIRÚRGICO
        - Secretaría no depende de un único permiso contenedor.
        - Un usuario puede ingresar si posee al menos un módulo administrativo.
        - MEDICO/ADMINISTRADOR conservan prioridad por el ERP clínico cuando
@@ -586,9 +633,16 @@
   }
 
   function obtenerTokenSesion() {
-    const token = sessionStorage.getItem(SEGURIDAD_CONFIG.claveToken) || '';
+    const token = leerSesionStorageCompat_(
+      SEGURIDAD_CONFIG.claveToken,
+      SEGURIDAD_CONFIG_LEGACY.claveToken
+    ) || '';
+
     const expiraEn = Number(
-      sessionStorage.getItem(SEGURIDAD_CONFIG.claveExpiracion) || 0
+      leerSesionStorageCompat_(
+        SEGURIDAD_CONFIG.claveExpiracion,
+        SEGURIDAD_CONFIG_LEGACY.claveExpiracion
+      ) || 0
     );
 
     if (expiraEn && Date.now() >= expiraEn) {
@@ -601,7 +655,10 @@
 
   function obtenerSesionLocal() {
     try {
-      const raw = sessionStorage.getItem(SEGURIDAD_CONFIG.claveSesion);
+      const raw = leerSesionStorageCompat_(
+        SEGURIDAD_CONFIG.claveSesion,
+        SEGURIDAD_CONFIG_LEGACY.claveSesion
+      );
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
       return null;
@@ -610,7 +667,10 @@
 
   function obtenerUsuarioActual() {
     try {
-      const raw = sessionStorage.getItem(SEGURIDAD_CONFIG.claveUsuario);
+      const raw = leerSesionStorageCompat_(
+        SEGURIDAD_CONFIG.claveUsuario,
+        SEGURIDAD_CONFIG_LEGACY.claveUsuario
+      );
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
       return null;
@@ -623,6 +683,7 @@
     sessionStorage.removeItem(SEGURIDAD_CONFIG.claveUsuario);
     sessionStorage.removeItem(SEGURIDAD_CONFIG.claveExpiracion);
     sessionStorage.removeItem(SEGURIDAD_CONFIG.claveUltimaValidacion);
+    limpiarClavesLegacySesion_();
   }
 
   function obtenerSesionLocalVigente_() {
@@ -643,8 +704,9 @@
 
   function requiereRevalidacionServidor_() {
     const ultima = Number(
-      sessionStorage.getItem(
-        SEGURIDAD_CONFIG.claveUltimaValidacion
+      leerSesionStorageCompat_(
+        SEGURIDAD_CONFIG.claveUltimaValidacion,
+        SEGURIDAD_CONFIG_LEGACY.claveUltimaValidacion
       ) || 0
     );
 
@@ -1016,8 +1078,8 @@
 
     const botonCrear = document.getElementById('btnNuevoUsuario');
 
-    if (botonCrear && botonCrear.dataset.auroSeguridadInit !== '1') {
-      botonCrear.dataset.auroSeguridadInit = '1';
+    if (botonCrear && botonCrear.dataset.iasynSeguridadInit !== '1') {
+      botonCrear.dataset.iasynSeguridadInit = '1';
       botonCrear.disabled = false;
       botonCrear.addEventListener('click', manejarClickNuevoUsuario);
     }
@@ -1236,9 +1298,9 @@
             '<td>' + escaparHtml(formatearFechaHoraEcuador(u.ultimo_acceso)) + '</td>' +
             '<td>' +
               '<div class="d-flex flex-wrap gap-2">' +
-                '<button class="btn-soft btn-sm" type="button" onclick="AUROSANAX_SEGURIDAD.abrirUsuario(\'' +
+                '<button class="btn-soft btn-sm" type="button" onclick="IASYN_SEGURIDAD.abrirUsuario(\'' +
                   escaparAtributoJs(u.id_usuario || '') + '\')">Editar</button>' +
-                '<button class="btn-line btn-sm" type="button" onclick="AUROSANAX_SEGURIDAD.restablecerClave(\'' +
+                '<button class="btn-line btn-sm" type="button" onclick="IASYN_SEGURIDAD.restablecerClave(\'' +
                   escaparAtributoJs(u.id_usuario || '') + '\')">Restablecer clave</button>' +
               '</div>' +
             '</td>' +
@@ -1259,9 +1321,9 @@
               escaparHtml(formatearFechaHoraEcuador(u.ultimo_acceso)) +
             '</span></div>' +
             '<div class="d-grid gap-2 mt-3">' +
-              '<button class="btn-soft" type="button" onclick="AUROSANAX_SEGURIDAD.abrirUsuario(\'' +
+              '<button class="btn-soft" type="button" onclick="IASYN_SEGURIDAD.abrirUsuario(\'' +
                 escaparAtributoJs(u.id_usuario || '') + '\')">Editar usuario</button>' +
-              '<button class="btn-line" type="button" onclick="AUROSANAX_SEGURIDAD.restablecerClave(\'' +
+              '<button class="btn-line" type="button" onclick="IASYN_SEGURIDAD.restablecerClave(\'' +
                 escaparAtributoJs(u.id_usuario || '') + '\')">Restablecer clave</button>' +
             '</div>' +
           '</div>'
@@ -2204,8 +2266,11 @@
     configuracion: SEGURIDAD_CONFIG
   });
 
-  // Alias IASYN nuevo + alias histórico para no romper consumidores existentes.
+  // API canónica IASYN.
   window.IASYN_SEGURIDAD = IASYN_SEGURIDAD_API_PUBLICA;
+
+  // Alias temporal de compatibilidad para HTML antiguos.
+  // No contiene endpoint AUROSANAX ni acceso a su base.
   window.AUROSANAX_SEGURIDAD = IASYN_SEGURIDAD_API_PUBLICA;
 
 })();
