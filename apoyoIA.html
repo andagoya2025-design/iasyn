@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#6c1d52">
   <meta name="color-scheme" content="light">
-  <meta name="description" content="Módulo de Apoyo Cognitivo con IA del ERP Clínico AUROSANAX.">
+  <meta name="description" content="Módulo de Apoyo Cognitivo con IA del ERP Clínico IASYN.">
   <meta name="robots" content="noindex, nofollow">
-  <title>Apoyo Cognitivo con IA | AUROSANAX</title>
+  <title>Apoyo Cognitivo con IA | IASYN</title>
 
   <!-- Bootstrap 5 -->
   <link
@@ -1141,7 +1141,7 @@
             </div>
 
             <div class="brand-copy">
-              <span class="brand-kicker">ERP Clínico AUROSANAX</span>
+              <span class="brand-kicker">ERP Clínico IASYN</span>
               <h1 class="brand-title">Apoyo Cognitivo con IA</h1>
             </div>
           </div>
@@ -1998,7 +1998,7 @@
     >
       <div class="toast-header">
         <i class="bi bi-heart-pulse-fill text-danger me-2"></i>
-        <strong class="me-auto">AUROSANAX</strong>
+        <strong class="me-auto">IASYN</strong>
         <small id="toastHora"></small>
         <button
           type="button"
@@ -2019,6 +2019,69 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"
   ></script>
+
+  <!-- IASYN: identidad institucional dinámica, solo lectura.
+       No modifica datos clínicos, sesión, borradores ni backend. -->
+  <script>
+    (() => {
+      "use strict";
+
+      const IASYN_APOYO_IA_CONFIG_ENDPOINT =
+        "https://script.google.com/macros/s/AKfycbwGgDpd_cUcGZa5irfGG8eem3LBvWE1-gGknCYUr-YWDI3XT1C5TPC0JK54QhoVFQwW/exec";
+
+      function textoSeguro(valor) {
+        return String(valor == null ? "" : valor).trim();
+      }
+
+      function nombreInstitucionalSeguro(valor) {
+        const nombre = textoSeguro(valor);
+        if (!nombre || /^(aurosanax|aurosanaxmedic|aurosanax medic)$/i.test(nombre)) {
+          return "IASYN";
+        }
+        return nombre;
+      }
+
+      function aplicarIdentidad(nombre) {
+        const nombreSeguro = nombreInstitucionalSeguro(nombre);
+        const metaDescripcion = document.querySelector('meta[name="description"]');
+        const brandKicker = document.querySelector(".brand-kicker");
+        const toastBrand = document.querySelector("#toastApp .toast-header strong.me-auto");
+
+        document.title = `Apoyo Cognitivo con IA | ${nombreSeguro}`;
+        if (metaDescripcion) {
+          metaDescripcion.content = `Módulo de Apoyo Cognitivo con IA del ERP Clínico ${nombreSeguro}.`;
+        }
+        if (brandKicker) brandKicker.textContent = `ERP Clínico ${nombreSeguro}`;
+        if (toastBrand) toastBrand.textContent = nombreSeguro;
+      }
+
+      async function cargarIdentidad() {
+        aplicarIdentidad("IASYN");
+
+        try {
+          const query = new URLSearchParams({
+            accion: "obtenerConfiguracion",
+            t: String(Date.now())
+          });
+
+          const respuesta = await fetch(
+            `${IASYN_APOYO_IA_CONFIG_ENDPOINT}?${query.toString()}`,
+            { method: "GET", cache: "no-store" }
+          );
+
+          if (!respuesta.ok) return;
+          const configuracion = await respuesta.json();
+          if (!configuracion || typeof configuracion !== "object" || Array.isArray(configuracion)) return;
+
+          aplicarIdentidad(configuracion.nombre_clinica);
+        } catch (error) {
+          console.warn("IASYN Apoyo IA: no se pudo cargar la identidad del centro; se conserva IASYN.", error);
+        }
+      }
+
+      cargarIdentidad();
+    })();
+  </script>
 
   <!--
     Módulo externo principal.
