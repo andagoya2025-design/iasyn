@@ -1,22 +1,42 @@
 /****************************************************************
- AUROSANAX ERP DEMO
+ IASYN CLINICAL ERP
  Archivo: apoyoIA.js
- Versión: 1.2.1
+ Versión: 1.2.2
  Responsabilidad: lógica funcional del módulo Apoyo Cognitivo con IA.
  Fecha/hora clínica: America/Guayaquil.
+
+ ANTIRREGRESIÓN / COMPATIBILIDAD
+ - IASYN usa claves nuevas como contrato principal del módulo.
+ - Las claves AUROSANAX se conservan únicamente como compatibilidad temporal
+   para leer contextos/borradores históricos y para no romper consumidores
+   que todavía dependan de los nombres anteriores.
+ - No modifica Google Sheets, Apps Script, pacientes, historias ni atenciones.
 ****************************************************************/
 (() => {
   "use strict";
 
-  const STORAGE_KEY_BASE = "aurosanax_apoyoIA_borrador_v2";
+  const STORAGE_KEY_BASE = "iasyn_apoyoIA_borrador_v2";
+  const STORAGE_KEY_BASE_LEGACY = "aurosanax_apoyoIA_borrador_v2";
   const LIMITE_SINTESIS = 2000;
+
   const SESSION_INPUT_KEYS = [
+    "iasyn_apoyoIA_contexto",
     "aurosanax_apoyoIA_contexto",
     "apoyoIA_contexto",
     "diagnostico_apoyoIA",
+    "iasyn_diagnostico_actual",
     "aurosanax_diagnostico_actual"
   ];
-  const SESSION_OUTPUT_KEY = "aurosanax_apoyoIA_resultado";
+
+  const SESSION_OUTPUT_KEY = "iasyn_apoyoIA_resultado";
+  const SESSION_OUTPUT_KEY_LEGACY = "aurosanax_apoyoIA_resultado";
+
+  const MODULO_ABRIR_KEY = "iasyn_abrir_modulo";
+  const MODULO_ABRIR_KEY_LEGACY = "aurosanax_abrir_modulo";
+  const URL_DIAGNOSTICO_KEY = "iasyn_url_diagnostico";
+  const URL_DIAGNOSTICO_KEY_LEGACY = "aurosanax_url_diagnostico";
+  const URL_PLAN_KEY = "iasyn_url_plan";
+  const URL_PLAN_KEY_LEGACY = "aurosanax_url_plan";
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -36,11 +56,40 @@
     );
   }
 
-  function obtenerClaveBorrador() {
+  function obtenerClaveBorrador(base = STORAGE_KEY_BASE) {
     const idAtencion = obtenerIdAtencionActual();
     return idAtencion
-      ? `${STORAGE_KEY_BASE}_${idAtencion}`
-      : `${STORAGE_KEY_BASE}_sin_atencion`;
+      ? `${base}_${idAtencion}`
+      : `${base}_sin_atencion`;
+  }
+
+  function obtenerClavesBorradorCompat() {
+    return [
+      obtenerClaveBorrador(STORAGE_KEY_BASE),
+      obtenerClaveBorrador(STORAGE_KEY_BASE_LEGACY)
+    ];
+  }
+
+  function leerBorradorCompat() {
+    for (const clave of obtenerClavesBorradorCompat()) {
+      const bruto = localStorage.getItem(clave);
+      if (bruto) return { clave, bruto };
+    }
+
+    return { clave: "", bruto: "" };
+  }
+
+  function leerSesionCompat(claveNueva, claveLegacy) {
+    return (
+      sessionStorage.getItem(claveNueva) ||
+      sessionStorage.getItem(claveLegacy) ||
+      ""
+    );
+  }
+
+  function escribirSesionCompat(claveNueva, claveLegacy, valor) {
+    sessionStorage.setItem(claveNueva, valor);
+    sessionStorage.setItem(claveLegacy, valor);
   }
 
   function normalizarTexto(valor) {
@@ -901,7 +950,8 @@
   }
 
   function cargarBorrador(mostrarConfirmacion = true) {
-    const bruto = localStorage.getItem(obtenerClaveBorrador());
+    const borrador = leerBorradorCompat();
+    const bruto = borrador.bruto;
 
     if (!bruto) {
       if (mostrarConfirmacion) {
@@ -956,7 +1006,9 @@
 
     if (!confirmar) return;
 
-    localStorage.removeItem(obtenerClaveBorrador());
+    obtenerClavesBorradorCompat().forEach((clave) => {
+      localStorage.removeItem(clave);
+    });
     refs.estadoBorrador.innerHTML =
       '<i class="bi bi-cloud-slash"></i> Sin borrador';
     mostrarToast("Borrador de esta atención eliminado.", "success");
@@ -1001,7 +1053,7 @@
       .replace("-05-00", "");
 
     enlace.href = url;
-    enlace.download = `AUROSANAX_ApoyoIA_${fechaArchivo}.json`;
+    enlace.download = `IASYN_ApoyoIA_${fechaArchivo}.json`;
     document.body.appendChild(enlace);
     enlace.click();
     enlace.remove();
@@ -1047,7 +1099,12 @@
         origen: "apoyoIA.html"
       };
 
-      sessionStorage.setItem(SESSION_OUTPUT_KEY, JSON.stringify(datos));
+      const payloadSesion = JSON.stringify(datos);
+      escribirSesionCompat(
+        SESSION_OUTPUT_KEY,
+        SESSION_OUTPUT_KEY_LEGACY,
+        payloadSesion
+      );
       mostrarToast(
         "Síntesis y criterio profesional guardados temporalmente en sesión.",
         "success"
@@ -1063,15 +1120,20 @@
     guardarEnSesion();
 
     /*
-     AUROSANAX FIX QUIRÚRGICO:
-     El ERP principal lee esta clave al cargar y restaura directamente
-     Historia clínica > Diagnóstico, conservando la atención activa.
+     IASYN FIX QUIRÚRGICO:
+     Se conserva la clave legacy únicamente como puente de compatibilidad
+     mientras el ERP principal completa la migración de contratos de sesión.
+     Historia clínica > Diagnóstico conserva la atención activa.
     */
-    sessionStorage.setItem("aurosanax_abrir_modulo", "diagnostico");
+    escribirSesionCompat(
+      MODULO_ABRIR_KEY,
+      MODULO_ABRIR_KEY_LEGACY,
+      "diagnostico"
+    );
 
     const destino =
       document.body.dataset.diagnosticoUrl ||
-      sessionStorage.getItem("aurosanax_url_diagnostico") ||
+      leerSesionCompat(URL_DIAGNOSTICO_KEY, URL_DIAGNOSTICO_KEY_LEGACY) ||
       "index.html";
 
     window.location.href = destino;
@@ -1095,10 +1157,14 @@
 
     const destino =
       document.body.dataset.planUrl ||
-      sessionStorage.getItem("aurosanax_url_plan") ||
+      leerSesionCompat(URL_PLAN_KEY, URL_PLAN_KEY_LEGACY) ||
       "index.html";
 
-    sessionStorage.setItem("aurosanax_abrir_modulo", "plan");
+    escribirSesionCompat(
+      MODULO_ABRIR_KEY,
+      MODULO_ABRIR_KEY_LEGACY,
+      "plan"
+    );
     window.location.href = destino;
   }
 
@@ -1401,8 +1467,8 @@
     inicializarRespaldo();
   }
 
-  window.AurosanaxApoyoIA = {
-    version: "1.2.0",
+  const IASYN_APOYOIA_API = {
+    version: "1.2.2",
     init,
     recopilarDatos,
     aplicarDatos,
@@ -1413,8 +1479,12 @@
     limpiarFormularioCompleto
   };
 
-  // Alias temporal para conservar compatibilidad con integraciones anteriores.
-  window.AurosanaxApoyoIABridge = window.AurosanaxApoyoIA;
+  // Contrato canónico IASYN.
+  window.IASYN_APOYOIA = IASYN_APOYOIA_API;
+
+  // Aliases temporales: conservar hasta verificar que no tengan consumidores.
+  window.AurosanaxApoyoIA = IASYN_APOYOIA_API;
+  window.AurosanaxApoyoIABridge = IASYN_APOYOIA_API;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
