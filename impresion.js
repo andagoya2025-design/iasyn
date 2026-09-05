@@ -1,12 +1,12 @@
 /* =========================================================
-   AUROSANAX ERP - MODULO DE IMPRESION / PDF
+   IASYN ERP - MODULO DE IMPRESION / PDF
    Archivo: impresion.js
    Fase 1: modularizacion segura desde index.html
    Contiene:
    - imprimirHistoriaClinica()
    - generarPDFReceta()
    - generarPDFConsentimiento()
-   - helpers de informe AUROSANAX
+   - helpers de informe IASYN
    No modifica Apps Script ni Google Sheets.
    ========================================================= */
 
@@ -17,6 +17,95 @@ function auroInformeEscape(valor){
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#039;');
+}
+
+/* IASYN - identidad institucional para impresión. Solo lectura. */
+function auroInformeIdentidadCentro(){
+  const txt = v => String(v == null ? '' : v).trim();
+  const colorSeguro = v => /^#[0-9a-fA-F]{6}$/.test(txt(v)) ? txt(v) : '';
+
+  const candidatos = [
+    window.auroConfiguracionCentro,
+    window.IASYN_CONFIGURACION_CENTRO,
+    window.configuracionCentro,
+    window.configuracionERP
+  ].filter(cfg => cfg && typeof cfg === 'object' && !Array.isArray(cfg));
+
+  const cfg = candidatos[0] || {};
+  let nombre = txt(
+    cfg.nombre_clinica ||
+    cfg.nombreCentro ||
+    cfg.nombre_centro ||
+    cfg.nombre ||
+    ''
+  );
+
+  if(!nombre || /^(aurosanax|aurosanaxmedic|aurosanax medic)$/i.test(nombre)){
+    nombre = 'IASYN';
+  }
+
+  let estilos = null;
+  try{
+    estilos = window.getComputedStyle
+      ? window.getComputedStyle(document.documentElement)
+      : null;
+  }catch(_error){}
+
+  const principal = colorSeguro(
+    cfg.color_principal ||
+    cfg.colorPrincipal ||
+    (estilos ? estilos.getPropertyValue('--primary') : '')
+  ) || '#7a174f';
+
+  const secundario = colorSeguro(
+    cfg.color_secundario ||
+    cfg.colorSecundario ||
+    (estilos ? (
+      estilos.getPropertyValue('--primary-2') ||
+      estilos.getPropertyValue('--primary2') ||
+      estilos.getPropertyValue('--secondary')
+    ) : '')
+  ) || '#c23b83';
+
+  return {
+    nombre,
+    colorPrincipal: principal,
+    colorSecundario: secundario
+  };
+}
+
+function auroInformeResolverIdMedicoReceta(){
+  try{
+    if(typeof window.obtenerDatosReceta === 'function'){
+      const datos = window.obtenerDatosReceta() || {};
+      const id = String(datos.id_medico || '').trim();
+      if(id) return id;
+    }
+
+    for(const idCampo of ['recIdMedico','hcIdMedico','idMedicoActual']){
+      const el = document.getElementById(idCampo);
+      const valor = String(el?.value || el?.textContent || '').trim();
+      if(valor) return valor;
+    }
+
+    if(typeof window.idMedicoActual === 'string' && window.idMedicoActual.trim()){
+      return window.idMedicoActual.trim();
+    }
+
+    for(const atencion of [
+      window.atencionActual,
+      window.currentAtencion,
+      window.atencionActiva,
+      window.currentAttention
+    ]){
+      if(!atencion || typeof atencion !== 'object') continue;
+      const id = String(atencion.id_medico || atencion.medico_id || '').trim();
+      if(id) return id;
+    }
+  }catch(error){
+    console.warn('IASYN IMPRESIÓN: no se pudo resolver el médico emisor.', error);
+  }
+  return '';
 }
 
 function auroInformeValue(id){
@@ -115,7 +204,7 @@ function auroInformeExtraerTabla(selector, opciones={}){
 }
 
 
-/* AUROSANAX FIX PDF ANTECEDENTES v3.2
+/* IASYN FIX PDF ANTECEDENTES v3.2
    Usa los campos ocultos/serializados ya guardados, no la tabla visual.
    Evita que los selectores de unidad vacíos impriman "años" o filas no marcadas.
 */
@@ -215,6 +304,11 @@ function auroInformeDiagnosticos(){
 }
 
 function imprimirHistoriaClinica(){
+  const identidadCentro = auroInformeIdentidadCentro();
+  const nombreCentro = identidadCentro.nombre || 'IASYN';
+  const colorPrincipal = identidadCentro.colorPrincipal || '#7a174f';
+  const colorSecundario = identidadCentro.colorSecundario || '#c23b83';
+
   const idPaciente = document.getElementById('hcPacienteSelect')?.value || '';
   if(!idPaciente){
     alert('Seleccione primero un paciente para generar el PDF.');
@@ -235,7 +329,7 @@ function imprimirHistoriaClinica(){
       <div class="auro-patient-avatar">${auroInformeEscape(String(nombrePaciente).trim().charAt(0).toUpperCase() || 'A')}</div>
       <div>
         <h2>${auroInformeEscape(nombrePaciente)}</h2>
-        <p>Historia clínica integral · AUROSANAX</p>
+        <p>Historia clínica integral · ${auroInformeEscape(nombreCentro)}</p>
       </div>
     </div>
     <div class="auro-info-grid">
@@ -281,20 +375,20 @@ function imprimirHistoriaClinica(){
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Historia Clínica AUROSANAX</title>
+<title>Historia Clínica ${auroInformeEscape(nombreCentro)}</title>
 <style>
   *{box-sizing:border-box}
   body{margin:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.35}
   .auro-report{max-width:920px;margin:0 auto;background:white;min-height:100vh;padding:24px 30px 30px}
-  .auro-header{border-radius:20px;background:linear-gradient(135deg,#7a174f,#c23b83);color:#fff;padding:18px 22px;margin-bottom:14px;position:relative;overflow:hidden}
+  .auro-header{border-radius:20px;background:linear-gradient(135deg,${colorPrincipal},${colorSecundario});color:#fff;padding:18px 22px;margin-bottom:14px;position:relative;overflow:hidden}
   .auro-header:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.12);right:-70px;top:-80px}
   .auro-header small{display:block;opacity:.9;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
   .auro-header h1{margin:0;font-size:24px;font-weight:900;letter-spacing:.02em}
   .auro-header p{margin:5px 0 0;opacity:.95;font-size:13px}
-  .auro-section-title{margin:14px 0 8px;display:flex;align-items:center;gap:8px;color:#7a174f;font-size:15px;font-weight:900;border-bottom:1px solid #fbcfe8;padding-bottom:6px}
+  .auro-section-title{margin:14px 0 8px;display:flex;align-items:center;gap:8px;color:${colorPrincipal};font-size:15px;font-weight:900;border-bottom:1px solid #fbcfe8;padding-bottom:6px}
   .auro-section-title span{background:#fdf2f8;color:#8b1e5a;border:1px solid #fbcfe8;border-radius:999px;padding:5px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
   .auro-patient-band{display:flex;align-items:center;gap:12px;border:1px solid #fbcfe8;background:linear-gradient(135deg,#fff,#fff7fb);border-radius:18px;padding:10px 12px;margin-bottom:10px}
-  .auro-patient-avatar{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#8b1e5a,#c23b83);color:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;flex:0 0 auto}
+  .auro-patient-avatar{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,${colorPrincipal},${colorSecundario});color:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;flex:0 0 auto}
   .auro-patient-band h2{margin:0;font-size:21px;font-weight:900;color:#111827}
   .auro-patient-band p{margin:3px 0 0;color:#6b7280;font-weight:700}
   .auro-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
@@ -317,7 +411,7 @@ function imprimirHistoriaClinica(){
   .auro-list-item strong{display:block;color:#111827;font-size:13px}
   .auro-list-item small{display:block;color:#64748b;font-weight:700;margin-top:3px}
   .auro-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  .auro-report-item{border:1px solid #edf2f7;border-left:3px solid #c23b83;background:#fff;border-radius:12px;padding:7px 9px;min-width:0}
+  .auro-report-item{border:1px solid #edf2f7;border-left:3px solid ${colorSecundario};background:#fff;border-radius:12px;padding:7px 9px;min-width:0}
   .auro-report-item strong{display:block;color:#111827;font-size:12.5px;font-weight:900;line-height:1.2;margin-bottom:3px}
   .auro-report-detail{display:grid;gap:3px}
   .auro-report-detail small{display:block;color:#475569;font-size:11px;font-weight:700;line-height:1.2}
@@ -330,9 +424,9 @@ function imprimirHistoriaClinica(){
 <body>
   <div class="auro-report">
     <header class="auro-header">
-      <small>AUROSANAX Clinical ERP</small>
+      <small>${auroInformeEscape(nombreCentro)} · IASYN Clinical ERP</small>
       <h1>Historia Clínica Integral</h1>
-      <p>Informe clínico profesional generado desde el ERP AUROSANAX</p>
+      <p>Informe clínico profesional generado desde IASYN Clinical ERP</p>
     </header>
 
     <div class="auro-section-title"><span>Paciente</span> Datos generales</div>
@@ -355,7 +449,7 @@ function imprimirHistoriaClinica(){
     ${auroInformeBloque('Observaciones', 'OB', observaciones)}
 
     <footer class="auro-footer">
-      <div>AUROSANAX · Informe clínico generado en entorno ERP.</div>
+      <div>${auroInformeEscape(nombreCentro)} · Informe clínico generado con IASYN.</div>
       <div>${fecha} ${hora}</div>
     </footer>
   </div>
@@ -395,10 +489,16 @@ async function guardarRecetaERP(){
     return;
   }
 
+  const idMedicoEmisor = auroInformeResolverIdMedicoReceta();
+  if(!idMedicoEmisor){
+    alert('No se pudo identificar el médico emisor de la receta. Abra o seleccione la atención correspondiente antes de guardar.');
+    return;
+  }
+
   const data = {
     id_paciente: paciente.id_paciente || activePatientId,
     id_historia: getValueIfExists('hcIdHistoria') || '',
-    id_medico: 'MED-001',
+    id_medico: idMedicoEmisor,
     fecha_receta: getValueIfExists('recFecha') || fechaHoyISO(),
     diagnostico_cie10: getValueIfExists('recCie10') || getValueIfExists('hcCie10Principal'),
     medicamento: medicamento,
@@ -411,7 +511,7 @@ async function guardarRecetaERP(){
     indicaciones: indicaciones,
     recomendaciones: [diagnosticoTexto, recomendaciones].filter(Boolean).join(' | '),
     estado: getValueIfExists('recEstado') || 'Emitida',
-    creado_por: 'AUROSANAX ERP'
+    creado_por: 'IASYN ERP'
   };
 
   try{
@@ -434,7 +534,7 @@ async function guardarRecetaERP(){
 
 function generarPDFReceta(){
   /*
-    AUROSANAX FIX IMPRESION RECETA:
+    IASYN FIX IMPRESION RECETA:
     impresion.js ya no imprime la pantalla actual con window.print().
     Delega la impresión a recetas.js, que es el módulo que construye
     la misma receta premium usada en Vista previa.
@@ -499,8 +599,11 @@ function generarPDFReceta(){
           return;
         }
 
+        const identidadCentro = auroInformeIdentidadCentro();
+        const tituloReceta = 'Receta médica · ' + (identidadCentro.nombre || 'IASYN');
+
         ventana.document.open();
-        ventana.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Receta médica AUROSANAX</title></head><body>' + htmlReceta + '</body></html>');
+        ventana.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>' + auroInformeEscape(tituloReceta) + '</title></head><body>' + htmlReceta + '</body></html>');
         ventana.document.close();
         ventana.focus();
 
@@ -521,7 +624,7 @@ function generarPDFReceta(){
     window.print();
 
   }catch(error){
-    console.error('AUROSANAX IMPRESION: error generando PDF de receta.', error);
+    console.error('IASYN IMPRESION: error generando PDF de receta.', error);
     alert('No se pudo generar la impresión de la receta.');
   }
 }
@@ -532,7 +635,7 @@ function generarPDFConsentimiento(){
 }
 
 
-/* AUROSANAX - delegación segura de certificados, patrón Recetas */
+/* IASYN - delegación segura de certificados, patrón Recetas */
 function generarPDFCertificado(){
   try{
     if(window.auroCertificados && typeof window.auroCertificados.obtenerDatos === 'function'){
@@ -550,7 +653,7 @@ function generarPDFCertificado(){
 
     alert('El módulo de certificados no está disponible para impresión.');
   }catch(error){
-    console.error('AUROSANAX IMPRESION: error generando certificado.', error);
+    console.error('IASYN IMPRESION: error generando certificado.', error);
     alert('No se pudo generar la impresión del certificado.');
   }
 }
